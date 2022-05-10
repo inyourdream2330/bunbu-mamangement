@@ -39,7 +39,16 @@ export class UsersService {
 
   generateUserCode(id: number) {
     const zeroPad = (num, places) => String(num).padStart(places, '0');
-    // 6 is the max number character in code
+    // 6 is the total number character in code
     return 'B' + zeroPad(id, 6);
+  }
+
+  async findById(id: number) {
+    const response = await this.usersRepository.findOneBy({ id });
+    return { data: response, message: 'Find user by id success' };
+  }
+
+  async updateHashRefreshToken(id: number, hash_refresh_token: string) {
+    return await this.usersRepository.update({ id }, { hash_refresh_token });
   }
 }
