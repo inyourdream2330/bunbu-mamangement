@@ -1,4 +1,8 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as argon2 from 'argon2';
 import { Response } from 'express';
@@ -18,12 +22,12 @@ export class AuthService {
   async login(dto: AuthDto, res: Response) {
     const user = (await this.usersService.findOneByEmail(dto.email)).data;
     if (!user) {
-      throw new InternalServerErrorException('User not exist');
+      throw new UnauthorizedException('User not exist');
     }
 
     const passwordMathched = await argon2.verify(user.password, dto.password);
     if (!passwordMathched) {
-      throw new InternalServerErrorException('pw sai cmnr');
+      throw new UnauthorizedException('Password incorrect');
     }
     const tokens = await this.getTokens(
       user.id,
