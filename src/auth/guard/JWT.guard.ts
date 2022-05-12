@@ -1,7 +1,7 @@
 import {
   BadRequestException,
-  ForbiddenException,
   Injectable,
+  InternalServerErrorException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
@@ -14,7 +14,10 @@ export class JWTGuard extends AuthGuard('jwt') {
     super();
   }
 
-  handleRequest(err, user, info, context) {
+  handleRequest(err, user, info: Error, context) {
+    if (err) {
+      throw new InternalServerErrorException(err);
+    }
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
       context.getHandler(),
       context.getClass(),
@@ -29,12 +32,12 @@ export class JWTGuard extends AuthGuard('jwt') {
         if (roles.includes(user.role)) {
           return user;
         } else {
-          throw new BadRequestException('Permission denied');
+          throw new UnauthorizedException('Permission denied');
         }
       } else {
         return user;
       }
     }
-    throw new BadRequestException();
+    throw new InternalServerErrorException(info.message);
   }
 }

@@ -1,19 +1,14 @@
-import {
-  Injectable,
-  InternalServerErrorException,
-  UnauthorizedException,
-} from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import * as argon2 from 'argon2';
 import { Response } from 'express';
 import { UsersService } from 'src/users/users.service';
 import { AuthDto } from './dto/auth.dto';
-import { JwtPayload, Tokens } from './types';
+import { TokenService } from './ultis/token.service';
 @Injectable()
 export class AuthService {
   constructor(
-    private jwtService: JwtService,
     private usersService: UsersService,
+    private tokenService: TokenService,
   ) {}
 
   async hashPassword(password: string): Promise<string> {
@@ -29,7 +24,7 @@ export class AuthService {
     if (!passwordMathched) {
       throw new UnauthorizedException('Password incorrect');
     }
-    const tokens = await this.getTokens(
+    const tokens = await this.tokenService.getTokens(
       user.id,
       user.email,
       user.role,
@@ -46,45 +41,5 @@ export class AuthService {
   ): Promise<void> {
     const hashRefreshToken = await argon2.hash(refreshToken);
     this.usersService.updateHashRefreshToken(userId, hashRefreshToken);
-  }
-
-  async getTokens(
-    userId: number,
-    email: string,
-    role: number,
-    remember: boolean,
-  ): Promise<Tokens> {
-    const jwtPayload: JwtPayload = {
-      id: userId,
-      email,
-      role,
-      remember,
-    };
-    const [access_token, refresh_token] = await Promise.all([
-      this.createAccessToken(jwtPayload),
-      this.createRefreshToken(jwtPayload, remember),
-    ]);
-
-    return { access_token, refresh_token };
-  }
-
-  getRawToken(token: string) {
-    return token.replace('Bearer', '').trim();
-  }
-
-  createAccessToken(jwtPayload: JwtPayload): Promise<string> {
-    return this.jwtService.signAsync(jwtPayload, {
-      secret: process.env.ACCESS_TOKEN_SECRET,
-      expiresIn: '15m',
-    });
-  }
-  createRefreshToken(
-    jwtPayload: JwtPayload,
-    remember: boolean,
-  ): Promise<string> {
-    return this.jwtService.signAsync(jwtPayload, {
-      secret: process.env.REFRESH_TOKEN_SECRET,
-      expiresIn: remember === true ? '30d' : '1d',
-    });
   }
 }

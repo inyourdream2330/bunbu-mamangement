@@ -30,6 +30,4 @@ export class CreateUserDto {
   @IsString()
   @IsEmail()
   email: string;
-
-  password: string;
 }

@@ -1,10 +1,9 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import * as argon2 from 'argon2';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './entities/user.entity';
-import * as argon2 from 'argon2';
-import { Response } from 'express';
 
 @Injectable()
 export class UsersService {
@@ -21,10 +20,9 @@ export class UsersService {
       throw new BadRequestException('User already exist');
     }
 
-    const hashPassword = await argon2.hash(createUserDto.password);
-    createUserDto.password = hashPassword;
+    const hashPassword = await argon2.hash('1');
     const response = await this.usersRepository
-      .save(createUserDto)
+      .save({ ...createUserDto, password: hashPassword })
       .then((res) => {
         res.code = this.generateUserCode(res.id);
         return this.usersRepository.save(res);
