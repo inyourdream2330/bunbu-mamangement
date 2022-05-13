@@ -1,12 +1,11 @@
 import {
-  BadRequestException,
   Injectable,
   InternalServerErrorException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
-import { IS_PUBLIC_KEY } from 'src/constant/StatusConstant.constant';
+import { IS_PUBLIC_KEY } from '../../constant/constant';
 
 @Injectable()
 export class JWTGuard extends AuthGuard('jwt') {
@@ -38,6 +37,6 @@ export class JWTGuard extends AuthGuard('jwt') {
         return user;
       }
     }
-    throw new InternalServerErrorException(info.message);
+    throw new UnauthorizedException(info.message);
   }
 }

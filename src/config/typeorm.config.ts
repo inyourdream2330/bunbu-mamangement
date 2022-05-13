@@ -15,6 +15,8 @@ export default class TypeOrmConfig {
       database: configService.get<string>('DATABASE_NAME'),
       entities: [__dirname + '/../**/*.entity{.ts,.js}'],
       synchronize: true,
+      keepConnectionAlive:
+        configService.get<boolean>('DATABASE_KEEPCONNECTIONALIVE') || true,
     };
   }
 }

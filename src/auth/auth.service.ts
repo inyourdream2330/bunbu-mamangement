@@ -1,8 +1,9 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import * as argon2 from 'argon2';
 import { Response } from 'express';
-import { UsersService } from 'src/users/users.service';
+import { UsersService } from '../users/users.service';
 import { AuthDto } from './dto/auth.dto';
+import { clearDB } from './ultis/DB.service';
 import { TokenService } from './ultis/token.service';
 @Injectable()
 export class AuthService {

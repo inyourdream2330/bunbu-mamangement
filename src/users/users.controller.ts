@@ -1,6 +1,6 @@
 import { Body, Controller, Post } from '@nestjs/common';
-import { Roles } from 'src/auth/decorator/role.decorator';
-import { ROLE } from 'src/constant/StatusConstant.constant';
+import { Roles } from '../auth/decorator/role.decorator';
+import { ROLE } from '../constant/constant';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UsersService } from './users.service';
 

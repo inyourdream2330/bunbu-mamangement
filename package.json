@@ -18,7 +18,7 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./jest-e2e.json --runInBand --forceExit --coverage"
   },
   "dependencies": {
     "@nestjs/common": "^8.0.0",
@@ -37,6 +37,7 @@
     "class-validator": "^0.13.2",
     "cookie-parser": "^1.4.6",
     "js-yaml": "^4.1.0",
+    "moment": "^2.29.3",
     "mysql2": "^2.3.3",
     "passport": "^0.5.2",
     "passport-jwt": "^4.0.0",

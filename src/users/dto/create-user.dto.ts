@@ -15,9 +15,9 @@ export class CreateUserDto {
   joining_date: string;
   @IsNotEmpty()
   dob: string;
-
-  code: string;
   @IsNotEmpty()
+  status: number;
+
   phone: string;
   @IsNotEmpty()
   contract_type: number;

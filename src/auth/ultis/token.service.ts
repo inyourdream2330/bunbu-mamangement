@@ -1,5 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import {
+  ACCESS_TOKEN_EXPIRES_IN,
+  REFRESH_TOKEN_EXPIRES_IN_DEFAULT,
+  REFRESH_TOKEN_EXPIRES_IN_REMEMBER,
+} from '../../constant/constant';
 import { JwtPayload, Tokens } from '../types';
 
 @Injectable()
@@ -8,7 +13,7 @@ export class TokenService {
   createAccessToken(jwtPayload: JwtPayload): Promise<string> {
     return this.jwtService.signAsync(jwtPayload, {
       secret: process.env.ACCESS_TOKEN_SECRET,
-      expiresIn: '15d',
+      expiresIn: ACCESS_TOKEN_EXPIRES_IN,
     });
   }
   createRefreshToken(
@@ -17,7 +22,10 @@ export class TokenService {
   ): Promise<string> {
     return this.jwtService.signAsync(jwtPayload, {
       secret: process.env.REFRESH_TOKEN_SECRET,
-      expiresIn: remember === true ? '30d' : '1d',
+      expiresIn:
+        remember === true
+          ? REFRESH_TOKEN_EXPIRES_IN_REMEMBER
+          : REFRESH_TOKEN_EXPIRES_IN_DEFAULT,
     });
   }
 
@@ -41,7 +49,7 @@ export class TokenService {
     return { access_token, refresh_token };
   }
 
-  getRawToken(token: string) {
-    return token.replace('Bearer', '').trim();
-  }
+  // getRawToken(token: string) {
+  //   return token.replace('Bearer', '').trim();
+  // }
 }

@@ -1,4 +1,10 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpCode,
+  HttpStatus,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as argon2 from 'argon2';
 import { Repository } from 'typeorm';
@@ -17,7 +23,7 @@ export class UsersService {
       email: createUserDto.email,
     });
     if (emailExists) {
-      throw new BadRequestException('User already exist');
+      throw new InternalServerErrorException('Email exist');
     }
 
     const hashPassword = await argon2.hash('1');
@@ -27,7 +33,11 @@ export class UsersService {
         res.code = this.generateUserCode(res.id);
         return this.usersRepository.save(res);
       });
-    return { data: response, message: 'Create user success' };
+    return {
+      statusCode: HttpStatus.CREATED,
+      data: response,
+      message: 'Create user success',
+    };
   }
 
   async findOneByEmail(email: string) {
@@ -39,11 +49,6 @@ export class UsersService {
     const zeroPad = (num, places) => String(num).padStart(places, '0');
     // 6 is the total number character in code
     return 'B' + zeroPad(id, 6);
-  }
-
-  async findById(id: number) {
-    const response = await this.usersRepository.findOneBy({ id });
-    return { data: response, message: 'Find user by id success' };
   }
 
   async updateHashRefreshToken(id: number, hash_refresh_token: string) {

@@ -1,15 +1,25 @@
-import { Body, Controller, Post, Res, UseInterceptors } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Res,
+  UseInterceptors,
+} from '@nestjs/common';
 import { Response } from 'express';
-import { TransformInterceptor } from 'src/interceptor/transform.interceptor';
+import { TransformInterceptor } from '../interceptor/transform.interceptor';
 import { AuthService } from './auth.service';
 import { Public } from './decorator/isPublic.decorator';
 import { AuthDto } from './dto/auth.dto';
+import { clearDB } from './ultis/DB.service';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Public()
+  @HttpCode(HttpStatus.OK)
   @UseInterceptors(TransformInterceptor)
   @Post('login')
   signin(
