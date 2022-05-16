@@ -32,7 +32,7 @@ describe('UsersController E2E Test', () => {
     await clearDB(['user']);
   });
 
-  it('Should return an Unauthorized exception', async () => {
+  it('Should return an Unauthorized exception, missing token', async () => {
     return request(app.getHttpServer())
       .post('/users')
       .send(INIT_USER_STAFF)
