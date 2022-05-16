@@ -6,6 +6,7 @@ import { TokenService } from '../src/auth/ultis/token.service';
 import {
   ADMIN_JWT_PAYLOAD,
   INIT_USER_STAFF,
+  LOGIN_BODY_ADMIN,
   STAFF_JWT_PAYLOAD,
 } from '../src/constant/constant';
 import { UsersController } from '../src/users/users.controller';
@@ -15,6 +16,11 @@ describe('UsersController E2E Test', () => {
   let app: INestApplication;
   let tokenService: TokenService;
   let usersController: UsersController;
+  const loginBody = {
+    email: INIT_USER_STAFF.email,
+    password: '1',
+    remember: false,
+  };
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -79,6 +85,33 @@ describe('UsersController E2E Test', () => {
       .expect(HttpStatus.INTERNAL_SERVER_ERROR)
       .expect((res) => {
         expect(res.body.message).toBe('Email exist');
+      });
+  });
+
+  it('Change password', async () => {
+    const accessToken = await tokenService.createAccessToken(ADMIN_JWT_PAYLOAD);
+    const createUser = await request(app.getHttpServer())
+      .post('/users')
+      .set('Authorization', 'Bearer ' + accessToken)
+      .send(INIT_USER_STAFF);
+
+    const login = await request(app.getHttpServer())
+      .post('/auth/login')
+      .send({ ...loginBody, remember: true })
+      .expect(HttpStatus.OK)
+      .expect((res) => {
+        expect(res.body.message).toBe('Login Success');
+      });
+
+    const changePassword = await request(app.getHttpServer())
+      .post('/users/change-password')
+      .set('Authorization', 'Bearer ' + login.body.data.access_token)
+      .send({
+        password: 'super-secret-password',
+      })
+      .expect(HttpStatus.OK)
+      .expect((res) => {
+        expect(res.body.message).toBe('Change Password Success');
       });
   });
 });

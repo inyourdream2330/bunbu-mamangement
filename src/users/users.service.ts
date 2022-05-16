@@ -6,6 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import * as argon2 from 'argon2';
 import { Repository } from 'typeorm';
+import { ChangePasswordDto } from './dto/changePassword-user.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './entities/user.entity';
 
@@ -51,5 +52,15 @@ export class UsersService {
 
   async updateHashRefreshToken(id: number, hash_refresh_token: string) {
     return await this.usersRepository.update({ id }, { hash_refresh_token });
+  }
+
+  async updatePassword(id: number, changePasswordDto: ChangePasswordDto) {
+    try {
+      const hashPassword = await argon2.hash(changePasswordDto.password);
+      await this.usersRepository.update({ id }, { password: hashPassword });
+      return { data: [], message: 'Change Password Success' };
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
   }
 }

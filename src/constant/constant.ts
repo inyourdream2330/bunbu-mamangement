@@ -85,3 +85,9 @@ export const REGEX_JWT: RegExp =
 export const ACCESS_TOKEN_EXPIRES_IN = '1d';
 export const REFRESH_TOKEN_EXPIRES_IN_DEFAULT = '1d';
 export const REFRESH_TOKEN_EXPIRES_IN_REMEMBER = '30d';
+
+export const LOGIN_BODY_ADMIN = {
+  email: INIT_USER_ADMIN.email,
+  password: '1',
+  remember: false,
+};
