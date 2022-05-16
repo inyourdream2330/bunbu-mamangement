@@ -42,4 +42,10 @@ export class AuthService {
     const hashRefreshToken = await argon2.hash(refreshToken);
     this.usersService.updateHashRefreshToken(userId, hashRefreshToken);
   }
+
+  async logout(req, res) {
+    this.usersService.updateHashRefreshToken(req.user.id, '');
+    res.clearCookie('refresh_token');
+    return { message: 'Logout Success', data: [] };
+  }
 }
