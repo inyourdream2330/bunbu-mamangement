@@ -12,7 +12,6 @@ import { TransformInterceptor } from '../interceptor/transform.interceptor';
 import { AuthService } from './auth.service';
 import { Public } from './decorator/isPublic.decorator';
 import { AuthDto } from './dto/auth.dto';
-import { clearDB } from './ultis/DB.service';
 
 @Controller('auth')
 export class AuthController {

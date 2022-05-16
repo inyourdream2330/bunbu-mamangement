@@ -1,5 +1,4 @@
 import { JwtPayload } from 'src/auth/types';
-import { CreateUserDto } from 'src/users/dto/create-user.dto';
 
 export const enum USER_STATUS {
   DELETED = 0,
