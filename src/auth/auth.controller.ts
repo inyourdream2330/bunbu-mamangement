@@ -4,6 +4,7 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  Request,
   Res,
   UseInterceptors,
 } from '@nestjs/common';
@@ -26,5 +27,12 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ): Promise<any> {
     return this.authService.login(dto, res);
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @UseInterceptors(TransformInterceptor)
+  @Post('logout')
+  logout(@Res({ passthrough: true }) res: Response, @Request() req: Request) {
+    return this.authService.logout(req, res);
   }
 }

@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
 import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
+import { getCookieData } from '../src/auth/ultis/cookie.service';
 import { clearDB } from '../src/auth/ultis/DB.service';
 import { TokenService } from '../src/auth/ultis/token.service';
 import {
@@ -164,5 +165,31 @@ describe('AuthController E2E Test', () => {
         jwtService.decode(login.body.data.refresh_token)['iat'] ===
         60 * 60 * 24 * 30,
     ).toBe(true);
+  });
+
+  it('Logout, remove refresh token in db and cookies', async () => {
+    const accessToken = await tokenService.createAccessToken(ADMIN_JWT_PAYLOAD);
+    await request(app.getHttpServer())
+      .post('/users')
+      .set('Authorization', 'Bearer ' + accessToken)
+      .send(INIT_USER_STAFF);
+
+    const login = await request(app.getHttpServer())
+      .post('/auth/login')
+      .send({ ...loginBody, remember: true })
+      .expect(HttpStatus.OK)
+      .expect((res) => {
+        expect(res.body.message).toBe('Login Success');
+      });
+
+    const logout = await request(app.getHttpServer())
+      .post('/auth/logout')
+      .set('Authorization', 'Bearer ' + login.body.data.access_token)
+      .expect(HttpStatus.OK)
+      .expect((res) => {
+        expect(res.body.message).toBe('Logout Success');
+      });
+    const cookies = getCookieData(logout.headers['set-cookie'][0]);
+    expect(cookies['refresh_token']).toBeUndefined();
   });
 });
