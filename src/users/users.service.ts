@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as argon2 from 'argon2';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import { ChangePasswordDto } from './dto/changePassword-user.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './entities/user.entity';
@@ -61,6 +61,33 @@ export class UsersService {
       return { data: [], message: 'Change Password Success' };
     } catch (err) {
       throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  async findUsers(
+    page: number,
+    limit: number,
+    name: string,
+    email: string,
+    code: string,
+  ) {
+    try {
+      const skip = (page - 1) * limit || 0;
+
+      const response = await this.usersRepository.find({
+        where: {
+          name: Like(`%${name}%`),
+          email: Like(`%${email}%`),
+          code: Like(`%${code}%`),
+        },
+        order: { id: 'DESC' },
+        take: limit,
+        skip: skip,
+      });
+
+      return { data: response, message: 'Find users success' };
+    } catch (err) {
+      return { message: err.message };
     }
   }
 }

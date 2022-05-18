@@ -1,10 +1,14 @@
 import {
   Body,
   Controller,
+  DefaultValuePipe,
+  Get,
   HttpCode,
   HttpStatus,
   Param,
+  ParseIntPipe,
   Post,
+  Query,
   UseInterceptors,
 } from '@nestjs/common';
 import { GetCurrentUser } from '../auth/decorator/getCurrentUser.decorator';
@@ -35,5 +39,19 @@ export class UsersController {
     @GetCurrentUser() user,
   ) {
     return this.usersService.updatePassword(user.id, changePasswordDto);
+  }
+
+  @Get()
+  @HttpCode(HttpStatus.OK)
+  @UseInterceptors(TransformInterceptor)
+  @Roles(ROLE.ADMIN)
+  getUsers(
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+    @Query('name', new DefaultValuePipe('')) name: string,
+    @Query('email', new DefaultValuePipe('')) email: string,
+    @Query('code', new DefaultValuePipe('')) code: string,
+  ) {
+    return this.usersService.findUsers(page, limit, name, email, code);
   }
 }
