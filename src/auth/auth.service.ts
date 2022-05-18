@@ -58,6 +58,7 @@ export class AuthService {
   async refreshTokens(refresh_token: string, res) {
     const jwtPayload = await this.jwtService.verifyAsync(refresh_token, {
       publicKey: process.env.REFRESH_TOKEN_SECRET,
+      ignoreExpiration: true,
     });
     const user = (await this.usersService.findOneById(jwtPayload.id)).data;
     if (!user || !user.hash_refresh_token) {
@@ -70,6 +71,11 @@ export class AuthService {
     if (!matchRefreshToken) {
       throw new UnauthorizedException('Refresh token not match in database');
     }
+    if (Date.now() >= jwtPayload.exp * 1000) {
+      this.usersService.updateHashRefreshToken(jwtPayload.id, '');
+      throw new UnauthorizedException('Login session expired');
+    }
+
     const tokens = await this.tokenService.getTokens(
       user.id,
       user.email,
