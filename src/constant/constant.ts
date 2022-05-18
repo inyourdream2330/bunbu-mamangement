@@ -51,6 +51,23 @@ export const INIT_USER_ADMIN = {
   position: 1,
 };
 
+export const UPDATE_USER_DATA = {
+  name: 'update',
+  email: 'update@gmail.com',
+  gender: 1,
+  id_card: 'id_card',
+  address: 'Hà Nội',
+  joining_date: '2021-11-11',
+  dob: '2021-11-11',
+  status: 1,
+  phone: '12345678',
+  contract_type: 1,
+  official_date: '2021-11-11',
+  role: 1,
+  position: 1,
+  code: 'CODEUPDATE',
+};
+
 export const INIT_USER_STAFF = {
   name: 'staff',
   email: 'staff@gmail.com',

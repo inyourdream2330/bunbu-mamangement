@@ -8,6 +8,7 @@ import {
   INIT_USER_STAFF,
   LOGIN_BODY_ADMIN,
   STAFF_JWT_PAYLOAD,
+  UPDATE_USER_DATA,
 } from '../src/constant/constant';
 import { UsersController } from '../src/users/users.controller';
 import { AppModule } from './../src/app.module';
@@ -112,6 +113,44 @@ describe('UsersController E2E Test', () => {
       .expect(HttpStatus.OK)
       .expect((res) => {
         expect(res.body.message).toBe('Change Password Success');
+      });
+  });
+
+  it('Update user', async () => {
+    const accessToken = await tokenService.createAccessToken(ADMIN_JWT_PAYLOAD);
+    const createUser = await request(app.getHttpServer())
+      .post('/users')
+      .set('Authorization', 'Bearer ' + accessToken)
+      .send(INIT_USER_STAFF);
+
+    return await request(app.getHttpServer())
+      .put(`/users/${createUser.body.data.id}`)
+      .set('Authorization', 'Bearer ' + accessToken)
+      .send(UPDATE_USER_DATA)
+      .expect(HttpStatus.OK)
+      .expect((res) => {
+        expect(res.body.message).toBe(
+          `Update user ${createUser.body.data.id} success`,
+        );
+      });
+  });
+  it('Update user without permission', async () => {
+    const accessToken = await tokenService.createAccessToken(ADMIN_JWT_PAYLOAD);
+    const createUser = await request(app.getHttpServer())
+      .post('/users')
+      .set('Authorization', 'Bearer ' + accessToken)
+      .send(INIT_USER_STAFF);
+
+    const staffAccessToken = await tokenService.createAccessToken(
+      STAFF_JWT_PAYLOAD,
+    );
+    return await request(app.getHttpServer())
+      .put(`/users/${createUser.body.data.id}`)
+      .set('Authorization', 'Bearer ' + staffAccessToken)
+      .send(UPDATE_USER_DATA)
+      .expect(HttpStatus.UNAUTHORIZED)
+      .expect((res) => {
+        expect(res.body.message).toBe('Permission denied');
       });
   });
 });

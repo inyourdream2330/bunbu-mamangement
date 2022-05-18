@@ -8,6 +8,7 @@ import * as argon2 from 'argon2';
 import { Repository } from 'typeorm';
 import { ChangePasswordDto } from './dto/changePassword-user.dto';
 import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 
 @Injectable()
@@ -62,5 +63,10 @@ export class UsersService {
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }
+  }
+
+  async updateUser(id: number, updateUserDto: UpdateUserDto) {
+    const response = await this.usersRepository.save({ id, ...updateUserDto });
+    return { data: response, message: `Update user ${id} success` };
   }
 }
