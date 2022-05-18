@@ -1,4 +1,9 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import * as argon2 from 'argon2';
 import { Response } from 'express';
 import { UsersService } from '../users/users.service';
@@ -9,6 +14,7 @@ export class AuthService {
   constructor(
     private usersService: UsersService,
     private tokenService: TokenService,
+    private jwtService: JwtService,
   ) {}
 
   async hashPassword(password: string): Promise<string> {
@@ -47,5 +53,31 @@ export class AuthService {
     this.usersService.updateHashRefreshToken(req.user.id, '');
     res.clearCookie('refresh_token');
     return { message: 'Logout Success', data: [] };
+  }
+
+  async refreshTokens(refresh_token: string, res) {
+    const jwtPayload = await this.jwtService.verifyAsync(refresh_token, {
+      publicKey: process.env.REFRESH_TOKEN_SECRET,
+    });
+    const user = (await this.usersService.findOneById(jwtPayload.id)).data;
+    if (!user || !user.hash_refresh_token) {
+      throw new UnauthorizedException('Access Denied');
+    }
+    const matchRefreshToken = await argon2.verify(
+      user.hash_refresh_token,
+      refresh_token,
+    );
+    if (!matchRefreshToken) {
+      throw new UnauthorizedException('Refresh token not match in database');
+    }
+    const tokens = await this.tokenService.getTokens(
+      user.id,
+      user.email,
+      user.role,
+      jwtPayload.remember,
+    );
+    res.cookie('refresh_token', tokens.refresh_token);
+    await this.updateRefreshTokenHash(user.id, tokens.refresh_token);
+    return { data: tokens, message: 'Refresh token success' };
   }
 }
