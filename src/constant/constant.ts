@@ -91,3 +91,10 @@ export const LOGIN_BODY_ADMIN = {
   password: '1',
   remember: false,
 };
+
+export const INIT_DAYOFF = {
+  date: '2022-05-11',
+  reasons: 'Đau pụng ẻ',
+  status: 1,
+  day_off_type: 1,
+};

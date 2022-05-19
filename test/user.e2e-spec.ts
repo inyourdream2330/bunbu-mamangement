@@ -6,7 +6,6 @@ import { TokenService } from '../src/auth/ultis/token.service';
 import {
   ADMIN_JWT_PAYLOAD,
   INIT_USER_STAFF,
-  LOGIN_BODY_ADMIN,
   STAFF_JWT_PAYLOAD,
 } from '../src/constant/constant';
 import { UsersController } from '../src/users/users.controller';
