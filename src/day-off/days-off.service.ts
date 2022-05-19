@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { addDays, subDays, format } from 'date-fns';
+import { addDays, subDays, format, isValid } from 'date-fns';
+import moment from 'moment';
 import { Between, Like, Repository } from 'typeorm';
 import { CreateDayOffDto } from './dto/create-day-off.dto';
 import { UpdateDayOffDto } from './dto/update-day-off.dto';
@@ -32,8 +33,10 @@ export class DaysOffService {
     // Default get from 10 days ago from now and to 10 days later from now, can change in future
     const findDate = (date: Date) =>
       Between(
-        from ? from : format(subDays(date, 10), 'yyyy-MM-dd'),
-        to ? to : format(addDays(date, 10), 'yyyy-MM-dd'),
+        isValid(new Date(from))
+          ? from
+          : format(subDays(date, 10), 'yyyy-MM-dd'),
+        isValid(new Date(to)) ? to : format(addDays(date, 10), 'yyyy-MM-dd'),
       );
     const response = await this.daysOffRepository.find({
       select: {
@@ -50,10 +53,10 @@ export class DaysOffService {
     return { data: response, message: 'Find days off success' };
   }
 
-  async updateDayOff(id, updateDayOffDto: UpdateDayOffDto) {
-    const response = this.daysOffRepository.save({
-      ...updateDayOffDto,
+  async updateDayOff(id: number, updateDayOffDto: UpdateDayOffDto) {
+    const response = await this.daysOffRepository.save({
       id,
+      ...updateDayOffDto,
     });
     return { data: response, message: `Update day off ${id} success` };
   }

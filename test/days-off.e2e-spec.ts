@@ -1,14 +1,13 @@
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import * as request from 'supertest';
+import { AppModule } from '../src/app.module';
 import { clearDB } from '../src/auth/ultis/DB.service';
 import { TokenService } from '../src/auth/ultis/token.service';
-import { AppModule } from '../src/app.module';
-import * as request from 'supertest';
 import {
   ADMIN_JWT_PAYLOAD,
   INIT_DAYOFF,
   INIT_USER_STAFF,
-  STAFF_JWT_PAYLOAD,
 } from '../src/constant/constant';
 import { UsersService } from '../src/users/users.service';
 
@@ -91,6 +90,49 @@ describe('Days Off Controller E2E Test', () => {
     return await request(app.getHttpServer())
       .get('/days-off')
       .query({ page: '1', limit: '10', from: '', to: '', name: '' })
+      .expect(HttpStatus.UNAUTHORIZED)
+      .expect((res) => {
+        expect(res.body.message).toBe('No auth token');
+      });
+  });
+
+  it('Update day off success', async () => {
+    const createDaysOf = await request(app.getHttpServer())
+      .post('/days-off')
+      .set('Authorization', 'Bearer ' + loginUser.body.data.access_token)
+      .send(INIT_DAYOFF)
+      .expect(HttpStatus.CREATED)
+      .expect((res) => {
+        expect(res.body.message).toBe('Create day off success');
+      });
+
+    return await request(app.getHttpServer())
+      .put(`/days-off/${createDaysOf.body.data.id}`)
+      .set('Authorization', 'Bearer ' + loginUser.body.data.access_token)
+      .send({ ...INIT_DAYOFF, reasons: 'Reasons updated' })
+      .expect(HttpStatus.OK)
+      .expect((res) => {
+        expect(res.body.message).toBe(
+          `Update day off ${res.body.data.id} success`,
+        );
+        expect(res.body.data.reasons).toBe('Reasons updated');
+      });
+  });
+
+  it('Update day off without token', async () => {
+    const createDaysOf = await request(app.getHttpServer())
+      .post('/days-off')
+      .set('Authorization', 'Bearer ' + loginUser.body.data.access_token)
+      .send(INIT_DAYOFF)
+      .expect(HttpStatus.CREATED)
+      .expect((res) => {
+        expect(res.body.message).toBe('Create day off success');
+      });
+
+    const updateWithoutToken = await request(app.getHttpServer())
+      .put(`/days-off/${createDaysOf.body.data.id}`)
+      // .set('Authorization', 'Bearer ' + loginUser.body.data.access_token)
+      .send({ ...INIT_DAYOFF, reasons: 'Reasons updated' })
       .expect(HttpStatus.UNAUTHORIZED)
       .expect((res) => {
         expect(res.body.message).toBe('No auth token');

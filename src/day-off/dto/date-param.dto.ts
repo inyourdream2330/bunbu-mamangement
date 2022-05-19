@@ -1,8 +1,10 @@
-import { IsDateString } from 'class-validator';
+import { IsDateString, IsNotEmpty } from 'class-validator';
 
 export class isDateParam {
-  @IsDateString()
-  from?: string;
-  @IsDateString()
-  to?: string;
+  // @IsDateString()
+  @IsNotEmpty()
+  from: string;
+  // @IsDateString()
+  @IsNotEmpty()
+  to: string;
 }

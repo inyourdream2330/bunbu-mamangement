@@ -48,6 +48,6 @@ export class DaysOffController {
     @Param('id') id: string,
     @Body() updateDayOffDto: UpdateDayOffDto,
   ) {
-    return this.daysOffService.updateDayOff(id, updateDayOffDto);
+    return this.daysOffService.updateDayOff(+id, updateDayOffDto);
   }
 }
