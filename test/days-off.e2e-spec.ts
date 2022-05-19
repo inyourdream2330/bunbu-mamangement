@@ -75,4 +75,25 @@ describe('Days Off Controller E2E Test', () => {
         expect(res.body.message).toBe('No auth token');
       });
   });
+
+  it('Find days off success', async () => {
+    return await request(app.getHttpServer())
+      .get('/days-off')
+      .set('Authorization', 'Bearer ' + loginUser.body.data.access_token)
+      .query({ page: '1', limit: '10', from: '', to: '', name: '' })
+      .expect(HttpStatus.OK)
+      .expect((res) => {
+        expect(res.body.message).toBe('Find days off success');
+      });
+  });
+
+  it('Find days off without token', async () => {
+    return await request(app.getHttpServer())
+      .get('/days-off')
+      .query({ page: '1', limit: '10', from: '', to: '', name: '' })
+      .expect(HttpStatus.UNAUTHORIZED)
+      .expect((res) => {
+        expect(res.body.message).toBe('No auth token');
+      });
+  });
 });
