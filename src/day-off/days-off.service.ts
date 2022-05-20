@@ -1,8 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { addDays, subDays, format, isValid } from 'date-fns';
-import moment from 'moment';
+import { addDays, format, isValid, subDays } from 'date-fns';
 import { Between, Like, Repository } from 'typeorm';
+import { UsersService } from '../users/users.service';
 import { CreateDayOffDto } from './dto/create-day-off.dto';
 import { UpdateDayOffDto } from './dto/update-day-off.dto';
 import { DayOff } from './entities/days-off.entity';
@@ -12,6 +12,7 @@ export class DaysOffService {
   constructor(
     @InjectRepository(DayOff)
     private daysOffRepository: Repository<DayOff>,
+    private usersService: UsersService,
   ) {}
 
   async createDayOff(createDayOffDto: CreateDayOffDto, id) {
@@ -29,26 +30,20 @@ export class DaysOffService {
     to: string,
     name: string,
   ) {
-    const skip = (page - 1) * limit || 0;
-    // Default get from 10 days ago from now and to 10 days later from now, can change in future
-    const findDate = (date: Date) =>
-      Between(
-        isValid(new Date(from))
-          ? from
-          : format(subDays(date, 10), 'yyyy-MM-dd'),
-        isValid(new Date(to)) ? to : format(addDays(date, 10), 'yyyy-MM-dd'),
-      );
+    const skip = (page - 1) * limit;
     const response = await this.daysOffRepository.find({
       select: {
         user: { id: true, name: true, email: true },
       },
       where: {
-        date: findDate(new Date()),
+        date: this.findDateQuery(new Date(), from, to),
         user: { name: Like(`%${name}%`) },
       },
       relations: {
         user: true,
       },
+      skip: skip,
+      take: limit,
     });
     return { data: response, message: 'Find days off success' };
   }
@@ -58,6 +53,66 @@ export class DaysOffService {
       id,
       ...updateDayOffDto,
     });
-    return { data: response, message: `Update day off ${id} success` };
+    return { data: response, message: `Update day off id = ${id} success` };
   }
+
+  async findDayOffById(id: number) {
+    const response = await this.daysOffRepository.findOneBy({ id });
+    if (!response) {
+      throw new InternalServerErrorException(
+        `Find fail, day off id = ${id} not exist`,
+      );
+    }
+    return { data: response, message: `Find day off by id = ${id} success` };
+  }
+
+  async findDaysOffByUser(
+    id: number,
+    page: number,
+    limit: number,
+    from: string,
+    to: string,
+  ) {
+    const isUser = (await this.usersService.findOneById(id)).data;
+    if (!isUser) {
+      throw new InternalServerErrorException(`User id = ${id} not exist`);
+    }
+    const skip = (page - 1) * limit || 0;
+    const response = await this.daysOffRepository.find({
+      select: {
+        user: { id: true, name: true, email: true },
+      },
+      where: {
+        date: this.findDateQuery(new Date(), from, to),
+        user: {
+          id,
+        },
+      },
+      relations: {
+        user: true,
+      },
+      skip: skip,
+      take: limit,
+    });
+    return {
+      data: response,
+      message: `Find day off by user_id = ${id} success`,
+    };
+  }
+
+  async deleteDaysOff(id: number) {
+    const isDayOff = await this.daysOffRepository.findOneBy({ id });
+    if (!isDayOff) {
+      throw new InternalServerErrorException(`Day off id = ${id} not exist`);
+    }
+    const response = await this.daysOffRepository.delete({ id });
+    return { message: `Delete day off id = ${id} success` };
+  }
+
+  findDateQuery = (date: Date, from: string, to: string) =>
+    // Default get from 10 days ago from now and to 10 days later from now, can change in future
+    Between(
+      isValid(new Date(from)) ? from : format(subDays(date, 10), 'yyyy-MM-dd'),
+      isValid(new Date(to)) ? to : format(addDays(date, 10), 'yyyy-MM-dd'),
+    );
 }

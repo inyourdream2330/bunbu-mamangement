@@ -63,4 +63,9 @@ export class UsersService {
       throw new InternalServerErrorException(err.message);
     }
   }
+
+  async findOneById(id: number) {
+    const response = await this.usersRepository.findOneBy({ id });
+    return { data: response, message: 'Get user by id success' };
+  }
 }

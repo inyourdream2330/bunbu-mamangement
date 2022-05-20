@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   DefaultValuePipe,
+  Delete,
   Get,
   Param,
   ParseIntPipe,
@@ -14,7 +15,6 @@ import { GetCurrentUser } from '../auth/decorator/getCurrentUser.decorator';
 import { TransformInterceptor } from '../interceptor/transform.interceptor';
 import { DaysOffService } from './days-off.service';
 import { CreateDayOffDto } from './dto/create-day-off.dto';
-import { isDateParam } from './dto/date-param.dto';
 import { UpdateDayOffDto } from './dto/update-day-off.dto';
 
 @Controller('days-off')
@@ -49,5 +49,29 @@ export class DaysOffController {
     @Body() updateDayOffDto: UpdateDayOffDto,
   ) {
     return this.daysOffService.updateDayOff(+id, updateDayOffDto);
+  }
+
+  @Get(':id')
+  @UseInterceptors(TransformInterceptor)
+  findDayOffById(@Param('id') id: string) {
+    return this.daysOffService.findDayOffById(+id);
+  }
+
+  @Get('/user/:id')
+  @UseInterceptors(TransformInterceptor)
+  findDaysOffByUser(
+    @Param('id') id: string,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+    @Query('from', new DefaultValuePipe('')) from: string,
+    @Query('to', new DefaultValuePipe('')) to: string,
+  ) {
+    return this.daysOffService.findDaysOffByUser(+id, page, limit, from, to);
+  }
+
+  @Delete(':id')
+  @UseInterceptors(TransformInterceptor)
+  deleteDayOff(@Param('id') id: string) {
+    return this.daysOffService.deleteDaysOff(+id);
   }
 }
