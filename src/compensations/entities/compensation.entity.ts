@@ -10,7 +10,7 @@ import { User } from '../../users/entities/user.entity';
 export class Compensation {
   @PrimaryGeneratedColumn()
   id: number;
-  @ManyToOne(() => User)
+  @ManyToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   user: User;
   @Column({ type: 'date' })

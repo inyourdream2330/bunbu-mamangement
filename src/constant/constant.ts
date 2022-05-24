@@ -7,14 +7,14 @@ export const enum USER_STATUS {
 }
 
 export const enum DAYOFF_STATUS {
-  CONFIRMED = 0,
-  WAITING = 1,
+  WAITING = 0,
+  CONFIRMED = 1,
   REJECTED = 2,
 }
 
 export const enum OT_STATUS {
-  CONFIRMED = 0,
-  WAITING = 1,
+  WAITING = 0,
+  CONFIRMED = 1,
   REJECTED = 2,
 }
 

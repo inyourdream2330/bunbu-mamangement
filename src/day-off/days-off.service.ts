@@ -1,7 +1,7 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { addDays, format, isValid, subDays } from 'date-fns';
-import { Between, Like, Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
+import { findDateQuery } from '../auth/ultis/common.service';
 import { User } from '../users/entities/user.entity';
 import { CreateDayOffDto } from './dto/create-day-off.dto';
 import { UpdateDayOffDto } from './dto/update-day-off.dto';
@@ -41,7 +41,7 @@ export class DaysOffService {
         user: { id: true, name: true, email: true },
       },
       where: {
-        date: this.findDateQuery(new Date(), from, to),
+        date: findDateQuery(new Date(), from, to),
         user: { name: Like(`%${name}%`) },
       },
       relations: {
@@ -93,7 +93,7 @@ export class DaysOffService {
         user: { id: true, name: true, email: true },
       },
       where: {
-        date: this.findDateQuery(new Date(), from, to),
+        date: findDateQuery(new Date(), from, to),
         user: {
           id,
         },
@@ -123,16 +123,24 @@ export class DaysOffService {
     await this.daysOffRepository.findOneByOrFail({ id }).catch((err) => {
       throw new InternalServerErrorException(`Day off id = ${id} not exist`);
     });
+    // const isWaiting =
+    //   (await this.daysOffRepository.findOneBy({ id })).status !== 0;
+    // if (isWaiting) {
+    //   throw new InternalServerErrorException(
+    //     'Your day off request are reject or accepted',
+    //   );
+    // }
+
     await this.daysOffRepository.update({ id }, { ...dto });
     return {
       message: `Day off id = ${id} update status success `,
     };
   }
 
-  findDateQuery = (date: Date, from: string, to: string) =>
-    // Default get from 10 days ago from now and to 10 days later from now, can change in future
-    Between(
-      isValid(new Date(from)) ? from : format(subDays(date, 10), 'yyyy-MM-dd'),
-      isValid(new Date(to)) ? to : format(addDays(date, 10), 'yyyy-MM-dd'),
-    );
+  // findDateQuery = (date: Date, from: string, to: string) =>
+  //   // Default get from 10 days ago from now and to 10 days later from now, can change in future
+  //   Between(
+  //     isValid(new Date(from)) ? from : format(subDays(date, 10), 'yyyy-MM-dd'),
+  //     isValid(new Date(to)) ? to : format(addDays(date, 10), 'yyyy-MM-dd'),
+  //   );
 }
