@@ -1,7 +1,12 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { addDays, format, isValid, subDays } from 'date-fns';
 import { Between, Like, Repository } from 'typeorm';
+import { User } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
 import { CreateDayOffDto } from './dto/create-day-off.dto';
 import { UpdateDayOffDto } from './dto/update-day-off.dto';
@@ -12,7 +17,8 @@ export class DaysOffService {
   constructor(
     @InjectRepository(DayOff)
     private daysOffRepository: Repository<DayOff>,
-    private usersService: UsersService,
+    @InjectRepository(User)
+    private usersRepository: Repository<User>,
   ) {}
 
   async createDayOff(createDayOffDto: CreateDayOffDto, id) {
@@ -73,10 +79,13 @@ export class DaysOffService {
     from: string,
     to: string,
   ) {
-    const isUser = (await this.usersService.findOneById(id)).data;
-    if (!isUser) {
+    // const isUser = (await this.usersService.findOneById(id)).data;
+    // if (!isUser) {
+    //   throw new InternalServerErrorException(`User id = ${id} not exist`);
+    // }
+    await this.usersRepository.findOneByOrFail({ id }).catch((err) => {
       throw new InternalServerErrorException(`User id = ${id} not exist`);
-    }
+    });
     const skip = (page - 1) * limit || 0;
     const response = await this.daysOffRepository.find({
       select: {

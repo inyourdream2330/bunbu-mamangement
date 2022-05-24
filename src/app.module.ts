@@ -10,6 +10,7 @@ import { JWTGuard } from './auth/guard/JWT.guard';
 import { typeOrmConfigAsync } from './config/typeorm.config';
 import { UsersModule } from './users/users.module';
 import { DayOffModule } from './day-off/days-off.module';
+import { CompensationsModule } from './compensations/compensations.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { DayOffModule } from './day-off/days-off.module';
     UsersModule,
     AuthModule,
     DayOffModule,
+    CompensationsModule,
   ],
   controllers: [AppController],
   providers: [
