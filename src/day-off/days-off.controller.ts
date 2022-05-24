@@ -16,6 +16,7 @@ import { TransformInterceptor } from '../interceptor/transform.interceptor';
 import { DaysOffService } from './days-off.service';
 import { CreateDayOffDto } from './dto/create-day-off.dto';
 import { UpdateDayOffDto } from './dto/update-day-off.dto';
+import { updateStatusDto } from './dto/update-status.dto';
 
 @Controller('days-off')
 export class DaysOffController {
@@ -73,5 +74,14 @@ export class DaysOffController {
   @UseInterceptors(TransformInterceptor)
   deleteDayOff(@Param('id') id: string) {
     return this.daysOffService.deleteDaysOff(+id);
+  }
+
+  @Put(':id/status')
+  @UseInterceptors(TransformInterceptor)
+  updateDayOffStatus(
+    @Body() updateStatusDto: updateStatusDto,
+    @Param('id') id: string,
+  ) {
+    return this.daysOffService.updateStatus(+id, updateStatusDto);
   }
 }

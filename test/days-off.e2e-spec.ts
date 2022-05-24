@@ -107,31 +107,30 @@ describe('Days Off Controller E2E Test', () => {
   });
 
   it('Update day off success', async () => {
-    const createDaysOf = await daysOffService.createDayOff(
+    const createDaysOff = await daysOffService.createDayOff(
       INIT_DAYOFF,
       createUser.data.id,
     );
     return await request(app.getHttpServer())
-      .put(`/days-off/${createDaysOf.data.id}`)
+      .put(`/days-off/${createDaysOff.data.id}`)
       .set('Authorization', 'Bearer ' + accessToken)
       .send({ ...INIT_DAYOFF, reasons: 'Reasons updated' })
       .expect(HttpStatus.OK)
       .expect((res) => {
         expect(res.body.message).toBe(
-          `Update day off id = ${res.body.data.id} success`,
+          `Update day off id = ${createDaysOff.data.id} success`,
         );
-        expect(res.body.data.reasons).toBe('Reasons updated');
       });
   });
 
   it('Update day off without token', async () => {
-    const createDaysOf = await daysOffService.createDayOff(
+    const createDaysOff = await daysOffService.createDayOff(
       INIT_DAYOFF,
       createUser.data.id,
     );
 
     const updateWithoutToken = await request(app.getHttpServer())
-      .put(`/days-off/${createDaysOf.data.id}`)
+      .put(`/days-off/${createDaysOff.data.id}`)
       // .set('Authorization', 'Bearer ' + accessToken)
       .send({ ...INIT_DAYOFF, reasons: 'Reasons updated' })
       .expect(HttpStatus.UNAUTHORIZED)
@@ -141,13 +140,13 @@ describe('Days Off Controller E2E Test', () => {
   });
 
   it('Find day off by id', async () => {
-    const createDaysOf = await daysOffService.createDayOff(
+    const createDaysOff = await daysOffService.createDayOff(
       INIT_DAYOFF,
       createUser.data.id,
     );
 
     const findDayOff = await request(app.getHttpServer())
-      .get(`/days-off/${createDaysOf.data.id}`)
+      .get(`/days-off/${createDaysOff.data.id}`)
       .set('Authorization', 'Bearer ' + accessToken)
       .expect(HttpStatus.OK)
       .expect((res) => {
@@ -178,7 +177,7 @@ describe('Days Off Controller E2E Test', () => {
   });
 
   it('Find all day off of user success', async () => {
-    const createDaysOf = await daysOffService.createDayOff(
+    const createDaysOff = await daysOffService.createDayOff(
       INIT_DAYOFF,
       createUser.data.id,
     );
@@ -206,30 +205,57 @@ describe('Days Off Controller E2E Test', () => {
   });
 
   it('Delete day off success', async () => {
-    const createDaysOf = await daysOffService.createDayOff(
+    const createDaysOff = await daysOffService.createDayOff(
       INIT_DAYOFF,
       createUser.data.id,
     );
     const deleteDayOff = await request(app.getHttpServer())
-      .delete(`/days-off/${createDaysOf.data.id}`)
+      .delete(`/days-off/${createDaysOff.data.id}`)
       .set('Authorization', 'Bearer ' + accessToken)
       .expect(HttpStatus.OK)
       .expect((res) => {
         expect(res.body.message).toBe(
-          `Delete day off id = ${createDaysOf.data.id} success`,
+          `Delete day off id = ${createDaysOff.data.id} success`,
         );
       });
   });
 
   it('Delete day off id not exist', async () => {
     const fakeId = -1;
-    const createDaysOf = await daysOffService.createDayOff(
+    const createDaysOff = await daysOffService.createDayOff(
       INIT_DAYOFF,
       createUser.data.id,
     );
     const deleteDayOff = await request(app.getHttpServer())
       .delete(`/days-off/${fakeId}`)
       .set('Authorization', 'Bearer ' + accessToken)
+      .expect(HttpStatus.INTERNAL_SERVER_ERROR)
+      .expect((res) => {
+        expect(res.body.message).toBe(`Day off id = ${fakeId} not exist`);
+      });
+  });
+  it('Update status day off success', async () => {
+    const createDaysOff = await daysOffService.createDayOff(
+      INIT_DAYOFF,
+      createUser.data.id,
+    );
+    const updateStatus = await request(app.getHttpServer())
+      .put(`/days-off/${createDaysOff.data.id}/status`)
+      .set('Authorization', 'Bearer ' + accessToken)
+      .send({ status: 3 })
+      .expect(HttpStatus.OK)
+      .expect((res) => {
+        expect(res.body.message).toBe(
+          `Day off id = ${createDaysOff.data.id} update status success `,
+        );
+      });
+  });
+  it('Update status day off fail, day off not exist', async () => {
+    const fakeId = -1;
+    const updateStatus = await request(app.getHttpServer())
+      .put(`/days-off/${fakeId}/status`)
+      .set('Authorization', 'Bearer ' + accessToken)
+      .send({ status: 3 })
       .expect(HttpStatus.INTERNAL_SERVER_ERROR)
       .expect((res) => {
         expect(res.body.message).toBe(`Day off id = ${fakeId} not exist`);

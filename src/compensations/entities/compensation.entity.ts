@@ -21,6 +21,6 @@ export class Compensation {
   start_at: Date;
   @Column('time')
   end_at: Date;
-  @Column()
+  @Column({ default: 0 })
   status: number;
 }

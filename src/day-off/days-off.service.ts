@@ -5,6 +5,7 @@ import { Between, Like, Repository } from 'typeorm';
 import { User } from '../users/entities/user.entity';
 import { CreateDayOffDto } from './dto/create-day-off.dto';
 import { UpdateDayOffDto } from './dto/update-day-off.dto';
+import { updateStatusDto } from './dto/update-status.dto';
 import { DayOff } from './entities/days-off.entity';
 
 @Injectable()
@@ -17,6 +18,9 @@ export class DaysOffService {
   ) {}
 
   async createDayOff(createDayOffDto: CreateDayOffDto, id) {
+    await this.usersRepository.findOneByOrFail({ id }).catch((err) => {
+      throw new InternalServerErrorException(`User id = ${id} not exist`);
+    });
     const response = await this.daysOffRepository.save({
       ...createDayOffDto,
       user: id,
@@ -50,11 +54,13 @@ export class DaysOffService {
   }
 
   async updateDayOff(id: number, updateDayOffDto: UpdateDayOffDto) {
-    const response = await this.daysOffRepository.save({
-      id,
-      ...updateDayOffDto,
-    });
-    return { data: response, message: `Update day off id = ${id} success` };
+    const response = await this.daysOffRepository.update(
+      { id },
+      {
+        ...updateDayOffDto,
+      },
+    );
+    return { message: `Update day off id = ${id} success` };
   }
 
   async findDayOffById(id: number) {
@@ -105,15 +111,23 @@ export class DaysOffService {
   }
 
   async deleteDaysOff(id: number) {
-    const isDayOff = await this.daysOffRepository.findOneBy({ id });
-    if (!isDayOff) {
+    await this.daysOffRepository.findOneByOrFail({ id }).catch((err) => {
       throw new InternalServerErrorException(`Day off id = ${id} not exist`);
-    }
+    });
+
     const response = await this.daysOffRepository.delete({ id });
     return { message: `Delete day off id = ${id} success` };
   }
 
-  // async updateStatus()
+  async updateStatus(id: number, dto: updateStatusDto) {
+    await this.daysOffRepository.findOneByOrFail({ id }).catch((err) => {
+      throw new InternalServerErrorException(`Day off id = ${id} not exist`);
+    });
+    await this.daysOffRepository.update({ id }, { ...dto });
+    return {
+      message: `Day off id = ${id} update status success `,
+    };
+  }
 
   findDateQuery = (date: Date, from: string, to: string) =>
     // Default get from 10 days ago from now and to 10 days later from now, can change in future
