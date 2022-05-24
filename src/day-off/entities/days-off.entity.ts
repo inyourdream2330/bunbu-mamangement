@@ -14,7 +14,7 @@ export class DayOff {
   date: string;
   @Column({ type: 'text' })
   reasons: string;
-  @Column()
+  @Column({ default: 0 })
   status: number;
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })

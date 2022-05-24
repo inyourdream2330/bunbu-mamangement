@@ -1,13 +1,8 @@
-import {
-  BadRequestException,
-  Injectable,
-  InternalServerErrorException,
-} from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { addDays, format, isValid, subDays } from 'date-fns';
 import { Between, Like, Repository } from 'typeorm';
 import { User } from '../users/entities/user.entity';
-import { UsersService } from '../users/users.service';
 import { CreateDayOffDto } from './dto/create-day-off.dto';
 import { UpdateDayOffDto } from './dto/update-day-off.dto';
 import { DayOff } from './entities/days-off.entity';
@@ -117,6 +112,8 @@ export class DaysOffService {
     const response = await this.daysOffRepository.delete({ id });
     return { message: `Delete day off id = ${id} success` };
   }
+
+  // async updateStatus()
 
   findDateQuery = (date: Date, from: string, to: string) =>
     // Default get from 10 days ago from now and to 10 days later from now, can change in future
