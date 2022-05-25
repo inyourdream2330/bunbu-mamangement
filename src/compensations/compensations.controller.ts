@@ -51,7 +51,14 @@ export class CompensationsController {
     @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
     @Query('from', new DefaultValuePipe('')) from: string,
     @Query('to', new DefaultValuePipe('')) to: string,
+    @Query('user_id', new DefaultValuePipe(-1), ParseIntPipe) user_id: number,
   ) {
-    return this.compensationsService.findCompensations(page, limit, from, to);
+    return this.compensationsService.findCompensations(
+      page,
+      limit,
+      from,
+      to,
+      user_id,
+    );
   }
 }

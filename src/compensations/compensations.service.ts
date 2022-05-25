@@ -1,6 +1,6 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { MoreThan, Repository } from 'typeorm';
 import { findDateQuery } from '../auth/ultis/common.service';
 import { User } from '../users/entities/user.entity';
 import { CreateCompensationDto } from './dto/create-compensation.dto';
@@ -28,6 +28,11 @@ export class CompensationsService {
   }
 
   async updateCompensation(dto: UpdateCompensationDto, id) {
+    await this.compensationRepository.findOneByOrFail({ id }).catch((err) => {
+      throw new InternalServerErrorException(
+        `Compensation id = ${id} not exist`,
+      );
+    });
     const response = await this.compensationRepository.update(
       { id },
       { ...dto },
@@ -51,11 +56,13 @@ export class CompensationsService {
     limit: number,
     from: string,
     to: string,
+    user_id: number,
   ) {
     const skip = (page - 1) * limit;
     const response = await this.compensationRepository.find({
       where: {
         date: findDateQuery(new Date(), from, to),
+        user: { id: user_id >= 0 ? user_id : MoreThan(user_id) },
       },
       select: {
         user: { id: true, name: true, email: true },
@@ -67,5 +74,17 @@ export class CompensationsService {
       take: limit,
     });
     return { data: response, message: 'Find compensations success' };
+  }
+
+  async findCompensationById(id: number) {
+    const response = await this.compensationRepository
+      .findOneByOrFail({ id })
+      .catch((err) => {
+        throw new InternalServerErrorException(
+          `Compensation id = ${id} not exist`,
+        );
+      });
+
+    return { data: response, message: `Find conpensation id = ${id} success` };
   }
 }

@@ -82,7 +82,14 @@ describe('Days Off Controller E2E Test', () => {
   it('Find days off without token', async () => {
     return await request(app.getHttpServer())
       .get('/days-off')
-      .query({ page: '1', limit: '10', from: '', to: '', name: '' })
+      .query({
+        page: '1',
+        limit: '10',
+        from: '',
+        to: '',
+        name: '',
+        user_id: '-1',
+      })
       .expect(HttpStatus.UNAUTHORIZED)
       .expect((res) => {
         expect(res.body.message).toBe('No auth token');
@@ -99,6 +106,7 @@ describe('Days Off Controller E2E Test', () => {
         from: 'super unformed from',
         to: 'super unformed to',
         name: '',
+        user_id: '-1',
       })
       .expect(HttpStatus.OK)
       .expect((res) => {
@@ -176,33 +184,33 @@ describe('Days Off Controller E2E Test', () => {
       });
   });
 
-  it('Find all day off of user success', async () => {
-    const createDaysOff = await daysOffService.createDayOff(
-      INIT_DAYOFF,
-      createUser.data.id,
-    );
-    const findDaysOff = await request(app.getHttpServer())
-      .get(`/days-off/user/${createUser.data.id}`)
-      .query({
-        page: '1',
-        limit: '10',
-        from: '2022-01-01',
-        to: '2022-12-31',
-        name: '',
-      })
-      .set('Authorization', 'Bearer ' + accessToken)
-      .expect(HttpStatus.OK);
-  });
-  it('Find all day off of not exist user', async () => {
-    const fakeUser = -1;
-    const findDaysOff = await request(app.getHttpServer())
-      .get(`/days-off/user/${fakeUser}`)
-      .set('Authorization', 'Bearer ' + accessToken)
-      .expect(HttpStatus.INTERNAL_SERVER_ERROR)
-      .expect((res) => {
-        expect(res.body.message).toBe(`User id = ${fakeUser} not exist`);
-      });
-  });
+  // it('Find all day off of user success', async () => {
+  //   const createDaysOff = await daysOffService.createDayOff(
+  //     INIT_DAYOFF,
+  //     createUser.data.id,
+  //   );
+  //   const findDaysOff = await request(app.getHttpServer())
+  //     .get(`/days-off/user/${createUser.data.id}`)
+  //     .query({
+  //       page: '1',
+  //       limit: '10',
+  //       from: '2022-01-01',
+  //       to: '2022-12-31',
+  //       name: '',
+  //     })
+  //     .set('Authorization', 'Bearer ' + accessToken)
+  //     .expect(HttpStatus.OK);
+  // });
+  // it('Find all day off of not exist user', async () => {
+  //   const fakeUser = -1;
+  //   const findDaysOff = await request(app.getHttpServer())
+  //     .get(`/days-off/user/${fakeUser}`)
+  //     .set('Authorization', 'Bearer ' + accessToken)
+  //     .expect(HttpStatus.INTERNAL_SERVER_ERROR)
+  //     .expect((res) => {
+  //       expect(res.body.message).toBe(`User id = ${fakeUser} not exist`);
+  //     });
+  // });
 
   it('Delete day off success', async () => {
     const createDaysOff = await daysOffService.createDayOff(

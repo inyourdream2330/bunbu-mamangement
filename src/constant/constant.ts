@@ -98,3 +98,10 @@ export const INIT_DAYOFF = {
   status: 1,
   day_off_type: 1,
 };
+
+export const INIT_COMPENSATIONS = {
+  date: '2022-05-24',
+  for_date: '2022-05-25',
+  start_at: '20:00',
+  end_at: '21:00',
+};

@@ -39,8 +39,16 @@ export class DaysOffController {
     @Query('from', new DefaultValuePipe('')) from: string,
     @Query('to', new DefaultValuePipe('')) to: string,
     @Query('name', new DefaultValuePipe('')) name: string,
+    @Query('user_id', new DefaultValuePipe(-1), ParseIntPipe) user_id: number,
   ) {
-    return this.daysOffService.findDaysOff(page, limit, from, to, name);
+    return this.daysOffService.findDaysOff(
+      page,
+      limit,
+      from,
+      to,
+      name,
+      user_id,
+    );
   }
 
   @Put(':id')
@@ -58,17 +66,17 @@ export class DaysOffController {
     return this.daysOffService.findDayOffById(+id);
   }
 
-  @Get('/user/:id')
-  @UseInterceptors(TransformInterceptor)
-  findDaysOffByUser(
-    @Param('id') id: string,
-    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
-    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
-    @Query('from', new DefaultValuePipe('')) from: string,
-    @Query('to', new DefaultValuePipe('')) to: string,
-  ) {
-    return this.daysOffService.findDaysOffByUser(+id, page, limit, from, to);
-  }
+  // @Get('/user/:id')
+  // @UseInterceptors(TransformInterceptor)
+  // findDaysOffByUser(
+  //   @Param('id') id: string,
+  //   @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+  //   @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+  //   @Query('from', new DefaultValuePipe('')) from: string,
+  //   @Query('to', new DefaultValuePipe('')) to: string,
+  // ) {
+  //   return this.daysOffService.findDaysOffByUser(+id, page, limit, from, to);
+  // }
 
   @Delete(':id')
   @UseInterceptors(TransformInterceptor)

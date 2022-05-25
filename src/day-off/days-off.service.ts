@@ -1,6 +1,6 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Like, Repository } from 'typeorm';
+import { Like, MoreThan, Repository } from 'typeorm';
 import { findDateQuery } from '../auth/ultis/common.service';
 import { User } from '../users/entities/user.entity';
 import { CreateDayOffDto } from './dto/create-day-off.dto';
@@ -34,6 +34,7 @@ export class DaysOffService {
     from: string,
     to: string,
     name: string,
+    user_id: number,
   ) {
     const skip = (page - 1) * limit;
     const response = await this.daysOffRepository.find({
@@ -42,7 +43,10 @@ export class DaysOffService {
       },
       where: {
         date: findDateQuery(new Date(), from, to),
-        user: { name: Like(`%${name}%`) },
+        user: {
+          name: Like(`%${name}%`),
+          id: user_id >= 0 ? user_id : MoreThan(user_id),
+        },
       },
       relations: {
         user: true,
@@ -73,42 +77,42 @@ export class DaysOffService {
     return { data: response, message: `Find day off by id = ${id} success` };
   }
 
-  async findDaysOffByUser(
-    id: number,
-    page: number,
-    limit: number,
-    from: string,
-    to: string,
-  ) {
-    // const isUser = (await this.usersService.findOneById(id)).data;
-    // if (!isUser) {
-    //   throw new InternalServerErrorException(`User id = ${id} not exist`);
-    // }
-    await this.usersRepository.findOneByOrFail({ id }).catch((err) => {
-      throw new InternalServerErrorException(`User id = ${id} not exist`);
-    });
-    const skip = (page - 1) * limit || 0;
-    const response = await this.daysOffRepository.find({
-      select: {
-        user: { id: true, name: true, email: true },
-      },
-      where: {
-        date: findDateQuery(new Date(), from, to),
-        user: {
-          id,
-        },
-      },
-      relations: {
-        user: true,
-      },
-      skip: skip,
-      take: limit,
-    });
-    return {
-      data: response,
-      message: `Find day off by user_id = ${id} success`,
-    };
-  }
+  // async findDaysOffByUser(
+  //   id: number,
+  //   page: number,
+  //   limit: number,
+  //   from: string,
+  //   to: string,
+  // ) {
+  // const isUser = (await this.usersService.findOneById(id)).data;
+  // if (!isUser) {
+  //   throw new InternalServerErrorException(`User id = ${id} not exist`);
+  // }
+  //   await this.usersRepository.findOneByOrFail({ id }).catch((err) => {
+  //     throw new InternalServerErrorException(`User id = ${id} not exist`);
+  //   });
+  //   const skip = (page - 1) * limit || 0;
+  //   const response = await this.daysOffRepository.find({
+  //     select: {
+  //       user: { id: true, name: true, email: true },
+  //     },
+  //     where: {
+  //       date: findDateQuery(new Date(), from, to),
+  //       user: {
+  //         id,
+  //       },
+  //     },
+  //     relations: {
+  //       user: true,
+  //     },
+  //     skip: skip,
+  //     take: limit,
+  //   });
+  //   return {
+  //     data: response,
+  //     message: `Find day off by user_id = ${id} success`,
+  //   };
+  // }
 
   async deleteDaysOff(id: number) {
     await this.daysOffRepository.findOneByOrFail({ id }).catch((err) => {
