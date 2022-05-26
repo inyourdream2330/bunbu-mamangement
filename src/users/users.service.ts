@@ -70,24 +70,26 @@ export class UsersService {
     name: string,
     email: string,
     code: string,
+    sort: any,
+    sort_by: string,
   ) {
-    try {
-      const skip = (page - 1) * limit || 0;
+    const skip = (page - 1) * limit;
+    const builder = this.usersRepository.createQueryBuilder('user');
 
-      const response = await this.usersRepository.find({
-        where: {
-          name: Like(`%${name}%`),
-          email: Like(`%${email}%`),
-          code: Like(`%${code}%`),
-        },
-        order: { id: 'DESC' },
-        take: limit,
-        skip: skip,
-      });
+    builder.where(
+      'user.name LIKE :name AND user.email LIKE :email AND user.code LIKE :code',
+      { name: `%${name}%`, email: `%${email}%`, code: `%${code}%` },
+    );
 
-      return { data: response, message: 'Find users success' };
-    } catch (err) {
-      return { message: err.message };
+    builder.offset(skip).limit(limit);
+    if (sort_by) {
+      builder.orderBy(`user.${sort_by}`, sort ? sort.toUpperCase() : 'DESC');
+    } else {
+      builder.orderBy('user.id', sort ? sort.toUpperCase() : 'DESC');
     }
+
+    const response = await builder.getMany();
+
+    return { data: response, message: 'Find users success' };
   }
 }

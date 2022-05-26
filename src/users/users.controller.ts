@@ -51,7 +51,17 @@ export class UsersController {
     @Query('name', new DefaultValuePipe('')) name: string,
     @Query('email', new DefaultValuePipe('')) email: string,
     @Query('code', new DefaultValuePipe('')) code: string,
+    @Query('sort', new DefaultValuePipe('')) sort: any,
+    @Query('sort_by', new DefaultValuePipe('')) sort_by: string,
   ) {
-    return this.usersService.findUsers(page, limit, name, email, code);
+    return this.usersService.findUsers(
+      page,
+      limit,
+      name,
+      email,
+      code,
+      sort,
+      sort_by,
+    );
   }
 }
