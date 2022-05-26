@@ -1,4 +1,4 @@
-import { HttpStatus, INestApplication } from '@nestjs/common';
+import { HttpStatus, INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import * as request from 'supertest';
 import { clearDB } from '../src/auth/ultis/DB.service';
@@ -17,6 +17,8 @@ describe('UsersController E2E Test', () => {
   let app: INestApplication;
   let tokenService: TokenService;
   let usersController: UsersController;
+  let accessTokenAdmin;
+  let accessTokenStaff;
   const loginBody = {
     email: INIT_USER_STAFF.email,
     password: '1',
@@ -29,8 +31,13 @@ describe('UsersController E2E Test', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
+    app.useGlobalPipes(new ValidationPipe());
     tokenService = moduleFixture.get<TokenService>(TokenService);
     usersController = moduleFixture.get<UsersController>(UsersController);
+
+    accessTokenAdmin = await tokenService.createAccessToken(ADMIN_JWT_PAYLOAD);
+    accessTokenStaff = await tokenService.createAccessToken(STAFF_JWT_PAYLOAD);
+
     await clearDB(['user']);
     await app.init();
   });
@@ -46,11 +53,10 @@ describe('UsersController E2E Test', () => {
       .expect(401);
   });
 
-  it('Should return an Unauthorized exception, message Permission denied', async () => {
-    const accessToken = await tokenService.createAccessToken(STAFF_JWT_PAYLOAD);
+  it('Create user fail, message Permission denied', async () => {
     return request(app.getHttpServer())
       .post('/users')
-      .set('Authorization', 'Bearer ' + accessToken)
+      .set('Authorization', 'Bearer ' + accessTokenStaff)
       .send(INIT_USER_STAFF)
       .expect(HttpStatus.UNAUTHORIZED)
       .expect((res) => {
@@ -58,11 +64,10 @@ describe('UsersController E2E Test', () => {
       });
   });
 
-  it('Should create user', async () => {
-    const accessToken = await tokenService.createAccessToken(ADMIN_JWT_PAYLOAD);
+  it('Should  user success', async () => {
     return request(app.getHttpServer())
       .post('/users')
-      .set('Authorization', 'Bearer ' + accessToken)
+      .set('Authorization', 'Bearer ' + accessTokenAdmin)
       .send(INIT_USER_STAFF)
       .expect(HttpStatus.CREATED)
       .expect((res) => {
@@ -71,17 +76,16 @@ describe('UsersController E2E Test', () => {
       });
   });
 
-  it('Should not create user becouse dupplicate user email', async () => {
-    const accessToken = await tokenService.createAccessToken(ADMIN_JWT_PAYLOAD);
+  it('create user fail, dupplicate user email', async () => {
     await request(app.getHttpServer())
       .post('/users')
-      .set('Authorization', 'Bearer ' + accessToken)
+      .set('Authorization', 'Bearer ' + accessTokenAdmin)
       .send(INIT_USER_STAFF)
       .expect(201);
 
     return await request(app.getHttpServer())
       .post('/users')
-      .set('Authorization', 'Bearer ' + accessToken)
+      .set('Authorization', 'Bearer ' + accessTokenAdmin)
       .send(INIT_USER_STAFF)
       .expect(HttpStatus.INTERNAL_SERVER_ERROR)
       .expect((res) => {
@@ -89,11 +93,92 @@ describe('UsersController E2E Test', () => {
       });
   });
 
+  it('Create user with missing required field', async () => {
+    // Missing name
+    await request(app.getHttpServer())
+      .post(`/users`)
+      .set('Authorization', 'Bearer ' + accessTokenAdmin)
+      .send({ ...UPDATE_USER_DATA, name: '' })
+      .expect(HttpStatus.BAD_REQUEST);
+    // Missing gender
+    await request(app.getHttpServer())
+      .post(`/users`)
+      .set('Authorization', 'Bearer ' + accessTokenAdmin)
+      .send({ ...UPDATE_USER_DATA, gender: '' })
+      .expect(HttpStatus.BAD_REQUEST);
+    // Missing email
+    await request(app.getHttpServer())
+      .post(`/users`)
+      .set('Authorization', 'Bearer ' + accessTokenAdmin)
+      .send({ ...UPDATE_USER_DATA, email: '' })
+      .expect(HttpStatus.BAD_REQUEST);
+    // Missing id_card
+    await request(app.getHttpServer())
+      .post(`/users`)
+      .set('Authorization', 'Bearer ' + accessTokenAdmin)
+      .send({ ...UPDATE_USER_DATA, id_card: '' })
+      .expect(HttpStatus.BAD_REQUEST);
+    // Missing address
+    await request(app.getHttpServer())
+      .post(`/users`)
+      .set('Authorization', 'Bearer ' + accessTokenAdmin)
+      .send({ ...UPDATE_USER_DATA, address: '' })
+      .expect(HttpStatus.BAD_REQUEST);
+    // Missing joining_date
+    await request(app.getHttpServer())
+      .post(`/users`)
+      .set('Authorization', 'Bearer ' + accessTokenAdmin)
+      .send({ ...UPDATE_USER_DATA, joining_date: '' })
+      .expect(HttpStatus.BAD_REQUEST);
+    // Missing dob
+    await request(app.getHttpServer())
+      .post(`/users`)
+      .set('Authorization', 'Bearer ' + accessTokenAdmin)
+      .send({ ...UPDATE_USER_DATA, dob: '' })
+      .expect(HttpStatus.BAD_REQUEST);
+
+    // Missing status
+    await request(app.getHttpServer())
+      .post(`/users`)
+      .set('Authorization', 'Bearer ' + accessTokenAdmin)
+      .send({ ...UPDATE_USER_DATA, status: '' })
+      .expect(HttpStatus.BAD_REQUEST);
+    // Missing phone
+    await request(app.getHttpServer())
+      .post(`/users`)
+      .set('Authorization', 'Bearer ' + accessTokenAdmin)
+      .send({ ...UPDATE_USER_DATA, phone: '' })
+      .expect(HttpStatus.BAD_REQUEST);
+    // Missing contract_type
+    await request(app.getHttpServer())
+      .post(`/users`)
+      .set('Authorization', 'Bearer ' + accessTokenAdmin)
+      .send({ ...UPDATE_USER_DATA, contract_type: '' })
+      .expect(HttpStatus.BAD_REQUEST);
+    // Missing official_date
+    await request(app.getHttpServer())
+      .post(`/users`)
+      .set('Authorization', 'Bearer ' + accessTokenAdmin)
+      .send({ ...UPDATE_USER_DATA, official_date: '' })
+      .expect(HttpStatus.BAD_REQUEST);
+    // Missing role
+    await request(app.getHttpServer())
+      .post(`/users`)
+      .set('Authorization', 'Bearer ' + accessTokenAdmin)
+      .send({ ...UPDATE_USER_DATA, role: '' })
+      .expect(HttpStatus.BAD_REQUEST);
+    // Missing position
+    await request(app.getHttpServer())
+      .post(`/users`)
+      .set('Authorization', 'Bearer ' + accessTokenAdmin)
+      .send({ ...UPDATE_USER_DATA, position: '' })
+      .expect(HttpStatus.BAD_REQUEST);
+  });
+
   it('Change password', async () => {
-    const accessToken = await tokenService.createAccessToken(ADMIN_JWT_PAYLOAD);
     const createUser = await request(app.getHttpServer())
       .post('/users')
-      .set('Authorization', 'Bearer ' + accessToken)
+      .set('Authorization', 'Bearer ' + accessTokenAdmin)
       .send(INIT_USER_STAFF);
 
     const login = await request(app.getHttpServer())
@@ -117,15 +202,14 @@ describe('UsersController E2E Test', () => {
   });
 
   it('Update user', async () => {
-    const accessToken = await tokenService.createAccessToken(ADMIN_JWT_PAYLOAD);
     const createUser = await request(app.getHttpServer())
       .post('/users')
-      .set('Authorization', 'Bearer ' + accessToken)
+      .set('Authorization', 'Bearer ' + accessTokenAdmin)
       .send(INIT_USER_STAFF);
 
     return await request(app.getHttpServer())
       .put(`/users/${createUser.body.data.id}`)
-      .set('Authorization', 'Bearer ' + accessToken)
+      .set('Authorization', 'Bearer ' + accessTokenAdmin)
       .send(UPDATE_USER_DATA)
       .expect(HttpStatus.OK)
       .expect((res) => {
@@ -134,19 +218,102 @@ describe('UsersController E2E Test', () => {
         );
       });
   });
-  it('Update user without permission', async () => {
-    const accessToken = await tokenService.createAccessToken(ADMIN_JWT_PAYLOAD);
+
+  it('Update user with missing required field', async () => {
     const createUser = await request(app.getHttpServer())
       .post('/users')
-      .set('Authorization', 'Bearer ' + accessToken)
+      .set('Authorization', 'Bearer ' + accessTokenAdmin)
+      .send(INIT_USER_STAFF);
+    // Missing name
+    await request(app.getHttpServer())
+      .put(`/users/${createUser.body.data.id}`)
+      .set('Authorization', 'Bearer ' + accessTokenAdmin)
+      .send({ ...UPDATE_USER_DATA, name: '' })
+      .expect(HttpStatus.BAD_REQUEST);
+    // Missing gender
+    await request(app.getHttpServer())
+      .put(`/users/${createUser.body.data.id}`)
+      .set('Authorization', 'Bearer ' + accessTokenAdmin)
+      .send({ ...UPDATE_USER_DATA, gender: '' })
+      .expect(HttpStatus.BAD_REQUEST);
+    // Missing email
+    await request(app.getHttpServer())
+      .put(`/users/${createUser.body.data.id}`)
+      .set('Authorization', 'Bearer ' + accessTokenAdmin)
+      .send({ ...UPDATE_USER_DATA, email: '' })
+      .expect(HttpStatus.BAD_REQUEST);
+    // Missing id_card
+    await request(app.getHttpServer())
+      .put(`/users/${createUser.body.data.id}`)
+      .set('Authorization', 'Bearer ' + accessTokenAdmin)
+      .send({ ...UPDATE_USER_DATA, id_card: '' })
+      .expect(HttpStatus.BAD_REQUEST);
+    // Missing address
+    await request(app.getHttpServer())
+      .put(`/users/${createUser.body.data.id}`)
+      .set('Authorization', 'Bearer ' + accessTokenAdmin)
+      .send({ ...UPDATE_USER_DATA, address: '' })
+      .expect(HttpStatus.BAD_REQUEST);
+    // Missing joining_date
+    await request(app.getHttpServer())
+      .put(`/users/${createUser.body.data.id}`)
+      .set('Authorization', 'Bearer ' + accessTokenAdmin)
+      .send({ ...UPDATE_USER_DATA, joining_date: '' })
+      .expect(HttpStatus.BAD_REQUEST);
+    // Missing dob
+    await request(app.getHttpServer())
+      .put(`/users/${createUser.body.data.id}`)
+      .set('Authorization', 'Bearer ' + accessTokenAdmin)
+      .send({ ...UPDATE_USER_DATA, dob: '' })
+      .expect(HttpStatus.BAD_REQUEST);
+
+    // Missing status
+    await request(app.getHttpServer())
+      .put(`/users/${createUser.body.data.id}`)
+      .set('Authorization', 'Bearer ' + accessTokenAdmin)
+      .send({ ...UPDATE_USER_DATA, status: '' })
+      .expect(HttpStatus.BAD_REQUEST);
+    // Missing phone
+    await request(app.getHttpServer())
+      .put(`/users/${createUser.body.data.id}`)
+      .set('Authorization', 'Bearer ' + accessTokenAdmin)
+      .send({ ...UPDATE_USER_DATA, phone: '' })
+      .expect(HttpStatus.BAD_REQUEST);
+    // Missing contract_type
+    await request(app.getHttpServer())
+      .put(`/users/${createUser.body.data.id}`)
+      .set('Authorization', 'Bearer ' + accessTokenAdmin)
+      .send({ ...UPDATE_USER_DATA, contract_type: '' })
+      .expect(HttpStatus.BAD_REQUEST);
+    // Missing official_date
+    await request(app.getHttpServer())
+      .put(`/users/${createUser.body.data.id}`)
+      .set('Authorization', 'Bearer ' + accessTokenAdmin)
+      .send({ ...UPDATE_USER_DATA, official_date: '' })
+      .expect(HttpStatus.BAD_REQUEST);
+    // Missing role
+    await request(app.getHttpServer())
+      .put(`/users/${createUser.body.data.id}`)
+      .set('Authorization', 'Bearer ' + accessTokenAdmin)
+      .send({ ...UPDATE_USER_DATA, role: '' })
+      .expect(HttpStatus.BAD_REQUEST);
+    // Missing position
+    await request(app.getHttpServer())
+      .put(`/users/${createUser.body.data.id}`)
+      .set('Authorization', 'Bearer ' + accessTokenAdmin)
+      .send({ ...UPDATE_USER_DATA, position: '' })
+      .expect(HttpStatus.BAD_REQUEST);
+  });
+
+  it('Update user without permission', async () => {
+    const createUser = await request(app.getHttpServer())
+      .post('/users')
+      .set('Authorization', 'Bearer ' + accessTokenAdmin)
       .send(INIT_USER_STAFF);
 
-    const staffAccessToken = await tokenService.createAccessToken(
-      STAFF_JWT_PAYLOAD,
-    );
     return await request(app.getHttpServer())
       .put(`/users/${createUser.body.data.id}`)
-      .set('Authorization', 'Bearer ' + staffAccessToken)
+      .set('Authorization', 'Bearer ' + accessTokenStaff)
       .send(UPDATE_USER_DATA)
       .expect(HttpStatus.UNAUTHORIZED)
       .expect((res) => {

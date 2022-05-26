@@ -7,8 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import * as argon2 from 'argon2';
 import { Repository } from 'typeorm';
 import { ChangePasswordDto } from './dto/changePassword-user.dto';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { UserDto } from './dto/user.dto';
 import { User } from './entities/user.entity';
 
 @Injectable()
@@ -18,7 +17,7 @@ export class UsersService {
     private usersRepository: Repository<User>,
   ) {}
 
-  async create(createUserDto: CreateUserDto) {
+  async create(createUserDto: UserDto) {
     const [emailExists] = await this.usersRepository.findBy({
       email: createUserDto.email,
     });
@@ -65,8 +64,8 @@ export class UsersService {
     }
   }
 
-  async updateUser(id: number, updateUserDto: UpdateUserDto) {
-    const response = await this.usersRepository.save({ id, ...updateUserDto });
+  async updateUser(id: number, userDto: UserDto) {
+    const response = await this.usersRepository.save({ id, ...userDto });
     return { data: response, message: `Update user ${id} success` };
   }
 }
