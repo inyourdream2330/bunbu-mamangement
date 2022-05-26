@@ -121,7 +121,15 @@ describe('UsersController E2E Test', () => {
     const getUsers = await request(app.getHttpServer())
       .get('/users')
       .set('Authorization', 'Bearer ' + accessToken)
-      .query({ page: '1', limit: '10', name: '', email: '', code: '' })
+      .query({
+        page: '1',
+        limit: '10',
+        name: '',
+        email: '',
+        code: '',
+        sort: '',
+        sort_by: '',
+      })
       .expect(HttpStatus.OK)
       .expect((res) => {
         expect(res.body.message).toBe('Find users success');
