@@ -41,7 +41,7 @@ export class UsersService {
 
   async findOneByEmail(email: string) {
     const response = await this.usersRepository.findOneBy({ email });
-    return { data: response, message: 'get user' };
+    return { data: response, message: 'Get user by email success' };
   }
 
   generateUserCode(id: number) {
@@ -67,5 +67,9 @@ export class UsersService {
   async updateUser(id: number, userDto: UserDto) {
     const response = await this.usersRepository.save({ id, ...userDto });
     return { data: response, message: `Update user ${id} success` };
+  }
+  async findOneById(id: number) {
+    const response = await this.usersRepository.findOneBy({ id });
+    return { data: response, message: 'Get user by id success' };
   }
 }
