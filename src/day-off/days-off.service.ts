@@ -28,14 +28,13 @@ export class DaysOffService {
     return { data: response, message: 'Create day off success' };
   }
 
-  async findDaysOff(
-    page: number,
-    limit: number,
-    from: string,
-    to: string,
-    name: string,
-    user_id: number,
-  ) {
+  async findDaysOff(query) {
+    const page = query.page || 1;
+    const limit = query.limit || 10;
+    const from = query.from;
+    const to = query.to;
+    const user_id = query.user_id;
+
     const skip = (page - 1) * limit;
     const response = await this.daysOffRepository.find({
       select: {
@@ -44,7 +43,6 @@ export class DaysOffService {
       where: {
         date: findDateQuery(new Date(), from, to),
         user: {
-          name: Like(`%${name}%`),
           id: user_id >= 0 ? user_id : MoreThan(user_id),
         },
       },

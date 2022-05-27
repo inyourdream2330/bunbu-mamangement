@@ -15,6 +15,7 @@ import { GetCurrentUser } from '../auth/decorator/getCurrentUser.decorator';
 import { TransformInterceptor } from '../interceptor/transform.interceptor';
 import { DaysOffService } from './days-off.service';
 import { CreateDayOffDto } from './dto/create-day-off.dto';
+import { DaysOffFindQueryDTO } from './dto/findQuery.dto';
 import { UpdateDayOffDto } from './dto/update-day-off.dto';
 import { updateStatusDto } from './dto/update-status.dto';
 
@@ -34,21 +35,15 @@ export class DaysOffController {
   @Get()
   @UseInterceptors(TransformInterceptor)
   getDaysOff(
-    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
-    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
-    @Query('from', new DefaultValuePipe('')) from: string,
-    @Query('to', new DefaultValuePipe('')) to: string,
-    @Query('name', new DefaultValuePipe('')) name: string,
-    @Query('user_id', new DefaultValuePipe(-1), ParseIntPipe) user_id: number,
+    // @Query('page', new DefaultValuePipe(0), ParseIntPipe) page: number,
+    // @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+    // @Query('from', new DefaultValuePipe('')) from: string,
+    // @Query('to', new DefaultValuePipe('')) to: string,
+    // @Query('name', new DefaultValuePipe('')) name: string,
+    // @Query('user_id', new DefaultValuePipe(-1), ParseIntPipe) user_id: number,
+    @Query() query: DaysOffFindQueryDTO,
   ) {
-    return this.daysOffService.findDaysOff(
-      page,
-      limit,
-      from,
-      to,
-      name,
-      user_id,
-    );
+    return this.daysOffService.findDaysOff(query);
   }
 
   @Put(':id')
