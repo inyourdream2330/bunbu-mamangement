@@ -1,13 +1,11 @@
 import { IsDateString, IsNotEmpty } from 'class-validator';
 
-export class CreateDayOffDto {
+export class DayOffDto {
   @IsNotEmpty()
   @IsDateString()
   date: string;
   @IsNotEmpty()
   reasons: string;
   @IsNotEmpty()
-  status: number;
-  @IsNotEmpty()
-  day_off_type: number;
+  type: number;
 }

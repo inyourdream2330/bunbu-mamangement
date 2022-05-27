@@ -2,7 +2,7 @@ import { Body, Controller, Post, UseInterceptors } from '@nestjs/common';
 import { GetCurrentUser } from '../auth/decorator/getCurrentUser.decorator';
 import { TransformInterceptor } from '../interceptor/transform.interceptor';
 import { DaysOffService } from './days-off.service';
-import { CreateDayOffDto } from './dto/create-day-off.dto';
+import { DayOffDto } from './dto/day-off.dto';
 
 @Controller('days-off')
 export class DaysOffController {
@@ -10,10 +10,7 @@ export class DaysOffController {
 
   @Post()
   @UseInterceptors(TransformInterceptor)
-  createDayOff(
-    @Body() createDayOffDto: CreateDayOffDto,
-    @GetCurrentUser() user,
-  ) {
+  createDayOff(@Body() createDayOffDto: DayOffDto, @GetCurrentUser() user) {
     return this.daysOffService.createDayOff(createDayOffDto, user.id);
   }
 }

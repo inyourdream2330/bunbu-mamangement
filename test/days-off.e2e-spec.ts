@@ -1,9 +1,11 @@
-import { HttpStatus, INestApplication } from '@nestjs/common';
+import { HttpStatus, INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import * as request from 'supertest';
+import { AppModule } from '../src/app.module';
+import { AuthController } from '../src/auth/auth.controller';
+import { AuthService } from '../src/auth/auth.service';
 import { clearDB } from '../src/auth/ultis/DB.service';
 import { TokenService } from '../src/auth/ultis/token.service';
-import { AppModule } from '../src/app.module';
-import * as request from 'supertest';
 import {
   ADMIN_JWT_PAYLOAD,
   INIT_DAYOFF,
@@ -16,12 +18,10 @@ describe('Days Off Controller E2E Test', () => {
   let app: INestApplication;
   let tokenService: TokenService;
   let usersService: UsersService;
-  const loginBody = {
-    email: INIT_USER_STAFF.email,
-    password: '1',
-    remember: false,
-  };
-  let loginUser;
+  let authController: AuthController;
+  let authService: AuthService;
+  let createUser;
+  let loginUserAccessToken;
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -29,25 +29,19 @@ describe('Days Off Controller E2E Test', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
+    app.useGlobalPipes(new ValidationPipe());
     tokenService = moduleFixture.get<TokenService>(TokenService);
     usersService = moduleFixture.get<UsersService>(UsersService);
+    authController = moduleFixture.get<AuthController>(AuthController);
+    authService = moduleFixture.get<AuthService>(AuthService);
     await clearDB(['day_off']);
     await clearDB(['user']);
     await app.init();
-
-    const accessToken = await tokenService.createAccessToken(ADMIN_JWT_PAYLOAD);
-    const createUser = await request(app.getHttpServer())
-      .post('/users')
-      .set('Authorization', 'Bearer ' + accessToken)
-      .send(INIT_USER_STAFF)
-      .expect(201);
-    loginUser = await request(app.getHttpServer())
-      .post('/auth/login')
-      .send({ ...loginBody })
-      .expect(HttpStatus.OK)
-      .expect((res) => {
-        expect(res.body.message).toBe('Login Success');
-      });
+    createUser = await usersService.create(INIT_USER_STAFF);
+    loginUserAccessToken = await tokenService.createAccessToken({
+      ...STAFF_JWT_PAYLOAD,
+      id: createUser.data.id,
+    });
   });
 
   afterAll(async () => {
@@ -58,7 +52,7 @@ describe('Days Off Controller E2E Test', () => {
   it('Create day off success', async () => {
     return await request(app.getHttpServer())
       .post('/days-off')
-      .set('Authorization', 'Bearer ' + loginUser.body.data.access_token)
+      .set('Authorization', 'Bearer ' + loginUserAccessToken)
       .send(INIT_DAYOFF)
       .expect(HttpStatus.CREATED)
       .expect((res) => {
@@ -74,5 +68,39 @@ describe('Days Off Controller E2E Test', () => {
       .expect((res) => {
         expect(res.body.message).toBe('No auth token');
       });
+  });
+
+  describe('Create day off missing required field', () => {
+    it('Create day off missing date', async () => {
+      return await request(app.getHttpServer())
+        .post('/days-off')
+        .set('Authorization', 'Bearer ' + loginUserAccessToken)
+        .send({ ...INIT_DAYOFF, date: '' })
+        .expect(HttpStatus.BAD_REQUEST)
+        .expect((res) => {
+          expect(res.body.message).toContain('date should not be empty');
+        });
+    });
+
+    it('Create day off missing reasons', async () => {
+      return await request(app.getHttpServer())
+        .post('/days-off')
+        .set('Authorization', 'Bearer ' + loginUserAccessToken)
+        .send({ ...INIT_DAYOFF, reasons: '' })
+        .expect(HttpStatus.BAD_REQUEST)
+        .expect((res) => {
+          expect(res.body.message).toContain('reasons should not be empty');
+        });
+    });
+    it('Create day off missing type', async () => {
+      return await request(app.getHttpServer())
+        .post('/days-off')
+        .set('Authorization', 'Bearer ' + loginUserAccessToken)
+        .send({ ...INIT_DAYOFF, type: '' })
+        .expect(HttpStatus.BAD_REQUEST)
+        .expect((res) => {
+          expect(res.body.message).toContain('type should not be empty');
+        });
+    });
   });
 });

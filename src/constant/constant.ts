@@ -7,8 +7,8 @@ export const enum USER_STATUS {
 }
 
 export const enum DAYOFF_STATUS {
-  CONFIRMED = 0,
-  WAITING = 1,
+  WAITING = 0,
+  CONFIRMED = 1,
   REJECTED = 2,
 }
 
@@ -95,6 +95,5 @@ export const LOGIN_BODY_ADMIN = {
 export const INIT_DAYOFF = {
   date: '2022-05-11',
   reasons: 'Đau pụng ẻ',
-  status: 1,
-  day_off_type: 1,
+  type: 1,
 };
