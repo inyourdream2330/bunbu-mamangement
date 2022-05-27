@@ -91,3 +91,10 @@ export const LOGIN_BODY_ADMIN = {
   password: '1',
   remember: false,
 };
+
+export const INIT_COMPENSATIONS = {
+  date: '2022-05-24',
+  for_date: '2022-05-25',
+  start_at: '20:00',
+  end_at: '21:00',
+};

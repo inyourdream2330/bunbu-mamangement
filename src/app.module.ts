@@ -9,6 +9,7 @@ import { AuthModule } from './auth/auth.module';
 import { JWTGuard } from './auth/guard/JWT.guard';
 import { typeOrmConfigAsync } from './config/typeorm.config';
 import { UsersModule } from './users/users.module';
+import { CompensationsModule } from './compensations/compensations.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { UsersModule } from './users/users.module';
     JwtModule.register({}),
     UsersModule,
     AuthModule,
+    CompensationsModule,
   ],
   controllers: [AppController],
   providers: [
