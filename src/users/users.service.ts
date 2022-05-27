@@ -41,7 +41,7 @@ export class UsersService {
 
   async findOneByEmail(email: string) {
     const response = await this.usersRepository.findOneBy({ email });
-    return { data: response, message: 'get user' };
+    return { data: response, message: 'Get user by email success' };
   }
 
   generateUserCode(id: number) {
