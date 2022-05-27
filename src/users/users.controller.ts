@@ -47,7 +47,6 @@ export class UsersController {
   @UseInterceptors(TransformInterceptor)
   @Roles(ROLE.ADMIN)
   getUsers(@Query() query: findUsersQueryDto) {
-    console.log(query);
     return this.usersService.findUsers(query);
   }
 }
