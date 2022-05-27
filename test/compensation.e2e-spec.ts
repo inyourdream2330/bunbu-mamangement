@@ -1,4 +1,4 @@
-import { HttpStatus, INestApplication } from '@nestjs/common';
+import { HttpStatus, INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
@@ -25,12 +25,14 @@ describe('Days Off Controller E2E Test', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
+    app.useGlobalPipes(new ValidationPipe());
+
     tokenService = moduleFixture.get<TokenService>(TokenService);
     compensationsService =
       moduleFixture.get<CompensationsService>(CompensationsService);
     usersService = moduleFixture.get<UsersService>(UsersService);
     authService = moduleFixture.get<AuthService>(AuthService);
-    await clearDB(['day_off', 'user']);
+    await clearDB(['compensation', 'user']);
     await app.init();
 
     createUser = await usersService.create(INIT_USER_STAFF);
@@ -42,101 +44,191 @@ describe('Days Off Controller E2E Test', () => {
   });
   beforeAll(async () => {});
 
-  it('Create compensation success', async () => {
-    return await request(app.getHttpServer())
-      .post(`/compensations`)
-      .set('Authorization', 'Bearer ' + accessToken)
-      .send(INIT_COMPENSATIONS)
-      .expect(HttpStatus.CREATED);
+  describe('Create compensation', () => {
+    it('Create compensation success', async () => {
+      return await request(app.getHttpServer())
+        .post(`/compensations`)
+        .set('Authorization', 'Bearer ' + accessToken)
+        .send(INIT_COMPENSATIONS)
+        .expect(HttpStatus.CREATED);
+    });
+
+    it('Create compensation fail without token', async () => {
+      return await request(app.getHttpServer())
+        .post(`/compensations`)
+        //   .set('Authorization', 'Bearer ' + accessToken)
+        .send(INIT_COMPENSATIONS)
+        .expect(HttpStatus.UNAUTHORIZED);
+    });
+    it('Create compensation with missing date', async () => {
+      return await request(app.getHttpServer())
+        .post(`/compensations`)
+        .set('Authorization', 'Bearer ' + accessToken)
+        .send({ ...INIT_COMPENSATIONS, date: '' })
+        .expect(HttpStatus.BAD_REQUEST)
+        .expect((res) => {
+          expect(res.body.message).toContain('date should not be empty');
+        });
+    });
+    it('Create compensation with missing for_date', async () => {
+      return await request(app.getHttpServer())
+        .post(`/compensations`)
+        .set('Authorization', 'Bearer ' + accessToken)
+        .send({ ...INIT_COMPENSATIONS, for_date: '' })
+        .expect(HttpStatus.BAD_REQUEST)
+        .expect((res) => {
+          expect(res.body.message).toContain('for_date should not be empty');
+        });
+    });
+    it('Create compensation with missing start_at', async () => {
+      return await request(app.getHttpServer())
+        .post(`/compensations`)
+        .set('Authorization', 'Bearer ' + accessToken)
+        .send({ ...INIT_COMPENSATIONS, start_at: '' })
+        .expect(HttpStatus.BAD_REQUEST)
+        .expect((res) => {
+          expect(res.body.message).toContain('start_at should not be empty');
+        });
+    });
+    it('Create compensation with missing end_at', async () => {
+      return await request(app.getHttpServer())
+        .post(`/compensations`)
+        .set('Authorization', 'Bearer ' + accessToken)
+        .send({ ...INIT_COMPENSATIONS, end_at: '' })
+        .expect(HttpStatus.BAD_REQUEST)
+        .expect((res) => {
+          expect(res.body.message).toContain('end_at should not be empty');
+        });
+    });
   });
 
-  it('Create compensation fail without token', async () => {
-    return await request(app.getHttpServer())
-      .post(`/compensations`)
-      //   .set('Authorization', 'Bearer ' + accessToken)
-      .send(INIT_COMPENSATIONS)
-      .expect(HttpStatus.UNAUTHORIZED);
+  describe('Update compensation', () => {
+    let createCompensation;
+    beforeEach(async () => {
+      createCompensation = await compensationsService.createCompensation(
+        INIT_COMPENSATIONS,
+        createUser.data.id,
+      );
+    });
+
+    it('Update compensation success', async () => {
+      return await request(app.getHttpServer())
+        .put(`/compensations/${createCompensation.data.id}`)
+        .set('Authorization', 'Bearer ' + accessToken)
+        .send(INIT_COMPENSATIONS)
+        .expect(HttpStatus.OK);
+    });
+
+    it('Update compensation fail, without token', async () => {
+      return await request(app.getHttpServer())
+        .put(`/compensations/${createCompensation.data.id}`)
+        // .set('Authorization', 'Bearer ' + accessToken)
+        .send(INIT_COMPENSATIONS)
+        .expect(HttpStatus.UNAUTHORIZED);
+    });
+
+    it('Update compensation fail, with not exist compensation', async () => {
+      const fakeCompensationId = -1;
+      return await request(app.getHttpServer())
+        .put(`/compensations/${fakeCompensationId}`)
+        .set('Authorization', 'Bearer ' + accessToken)
+        .send(INIT_COMPENSATIONS)
+        .expect(HttpStatus.INTERNAL_SERVER_ERROR);
+    });
+
+    it('Update compensation with missing date', async () => {
+      return await request(app.getHttpServer())
+        .put(`/compensations/${createCompensation.data.id}`)
+        .set('Authorization', 'Bearer ' + accessToken)
+        .send({ ...INIT_COMPENSATIONS, date: '' })
+        .expect(HttpStatus.BAD_REQUEST)
+        .expect((res) => {
+          expect(res.body.message).toContain('date should not be empty');
+        });
+    });
+    it('Update compensation with missing for_date', async () => {
+      return await request(app.getHttpServer())
+        .put(`/compensations/${createCompensation.data.id}`)
+        .set('Authorization', 'Bearer ' + accessToken)
+        .send({ ...INIT_COMPENSATIONS, for_date: '' })
+        .expect(HttpStatus.BAD_REQUEST)
+        .expect((res) => {
+          expect(res.body.message).toContain('for_date should not be empty');
+        });
+    });
+    it('Update compensation with missing start_at', async () => {
+      return await request(app.getHttpServer())
+        .put(`/compensations/${createCompensation.data.id}`)
+        .set('Authorization', 'Bearer ' + accessToken)
+        .send({ ...INIT_COMPENSATIONS, start_at: '' })
+        .expect(HttpStatus.BAD_REQUEST)
+        .expect((res) => {
+          expect(res.body.message).toContain('start_at should not be empty');
+        });
+    });
+    it('Update compensation with missing end_at', async () => {
+      return await request(app.getHttpServer())
+        .put(`/compensations/${createCompensation.data.id}`)
+        .set('Authorization', 'Bearer ' + accessToken)
+        .send({ ...INIT_COMPENSATIONS, end_at: '' })
+        .expect(HttpStatus.BAD_REQUEST)
+        .expect((res) => {
+          expect(res.body.message).toContain('end_at should not be empty');
+        });
+    });
   });
 
-  it('Update compensation success', async () => {
-    const createCompensation = await compensationsService.createCompensation(
-      INIT_COMPENSATIONS,
-      createUser.data.id,
-    );
-    return await request(app.getHttpServer())
-      .put(`/compensations/${createCompensation.data.id}`)
-      .set('Authorization', 'Bearer ' + accessToken)
-      .send(INIT_COMPENSATIONS)
-      .expect(HttpStatus.OK);
-  });
-  it('Update compensation fail, without token', async () => {
-    const createCompensation = await compensationsService.createCompensation(
-      INIT_COMPENSATIONS,
-      createUser.data.id,
-    );
-    return await request(app.getHttpServer())
-      .put(`/compensations/${createCompensation.data.id}`)
-      // .set('Authorization', 'Bearer ' + accessToken)
-      .send(INIT_COMPENSATIONS)
-      .expect(HttpStatus.UNAUTHORIZED);
-  });
+  describe('Delete conpensation', () => {
+    let createCompensation;
+    beforeEach(async () => {
+      createCompensation = await compensationsService.createCompensation(
+        INIT_COMPENSATIONS,
+        createUser.data.id,
+      );
+    });
 
-  it('Update compensation fail, with not exist compensation', async () => {
-    const fakeCompensationId = -1;
-    return await request(app.getHttpServer())
-      .put(`/compensations/${fakeCompensationId}`)
-      .set('Authorization', 'Bearer ' + accessToken)
-      .send(INIT_COMPENSATIONS)
-      .expect(HttpStatus.INTERNAL_SERVER_ERROR);
-  });
+    it('Delete compensation success', async () => {
+      return await request(app.getHttpServer())
+        .delete(`/compensations/${createCompensation.data.id}`)
+        .set('Authorization', 'Bearer ' + accessToken)
+        .expect(HttpStatus.OK);
+    });
 
-  it('Delete compensation success', async () => {
-    const createCompensation = await compensationsService.createCompensation(
-      INIT_COMPENSATIONS,
-      createUser.data.id,
-    );
-    return await request(app.getHttpServer())
-      .delete(`/compensations/${createCompensation.data.id}`)
-      .set('Authorization', 'Bearer ' + accessToken)
-      .expect(HttpStatus.OK);
+    it('Delete compensation fail, without token', async () => {
+      return await request(app.getHttpServer())
+        .delete(`/compensations/${createCompensation.data.id}`)
+        // .set('Authorization', 'Bearer ' + accessToken)
+        .expect(HttpStatus.UNAUTHORIZED);
+    });
+
+    it('Delete compensation fail, with not exist compensation', async () => {
+      const fakeCompensationId = -1;
+      return await request(app.getHttpServer())
+        .delete(`/compensations/${fakeCompensationId}`)
+        .set('Authorization', 'Bearer ' + accessToken)
+        .expect(HttpStatus.INTERNAL_SERVER_ERROR);
+    });
   });
 
-  it('Delete compensation fail, without token', async () => {
-    const createCompensation = await compensationsService.createCompensation(
-      INIT_COMPENSATIONS,
-      createUser.data.id,
-    );
-    return await request(app.getHttpServer())
-      .delete(`/compensations/${createCompensation.data.id}`)
-      // .set('Authorization', 'Bearer ' + accessToken)
-      .expect(HttpStatus.UNAUTHORIZED);
-  });
+  describe('Find compensation', () => {
+    it('Find compensation successgit', async () => {
+      const createCompensation = await compensationsService.createCompensation(
+        INIT_COMPENSATIONS,
+        createUser.data.id,
+      );
 
-  it('Delete compensation fail, with not exist compensation', async () => {
-    const fakeCompensationId = -1;
-    return await request(app.getHttpServer())
-      .delete(`/compensations/${fakeCompensationId}`)
-      .set('Authorization', 'Bearer ' + accessToken)
-      .expect(HttpStatus.INTERNAL_SERVER_ERROR);
-  });
-
-  it('Find compensation', async () => {
-    const createCompensation = await compensationsService.createCompensation(
-      INIT_COMPENSATIONS,
-      createUser.data.id,
-    );
-
-    return await request(app.getHttpServer())
-      .get('/compensations')
-      .set('Authorization', 'Bearer ' + accessToken)
-      .query({
-        page: '1',
-        limit: '10',
-        from: '',
-        to: '',
-        name: '',
-        user_id: '-1',
-      })
-      .expect(HttpStatus.OK);
+      return await request(app.getHttpServer())
+        .get('/compensations')
+        .set('Authorization', 'Bearer ' + accessToken)
+        .query({
+          page: '1',
+          limit: '10',
+          from: '',
+          to: '',
+          name: '',
+          user_id: '-1',
+        })
+        .expect(HttpStatus.OK);
+    });
   });
 });

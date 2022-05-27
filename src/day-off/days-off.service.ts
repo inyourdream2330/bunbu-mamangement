@@ -4,6 +4,7 @@ import { Like, MoreThan, Repository } from 'typeorm';
 import { findDateQuery } from '../auth/ultis/common.service';
 import { User } from '../users/entities/user.entity';
 import { CreateDayOffDto } from './dto/create-day-off.dto';
+import { FindDaysOffQueryDTO } from './dto/findQuery.dto';
 import { UpdateDayOffDto } from './dto/update-day-off.dto';
 import { updateStatusDto } from './dto/update-status.dto';
 import { DayOff } from './entities/days-off.entity';
@@ -28,7 +29,7 @@ export class DaysOffService {
     return { data: response, message: 'Create day off success' };
   }
 
-  async findDaysOff(query) {
+  async findDaysOff(query: FindDaysOffQueryDTO) {
     const page = query.page || 1;
     const limit = query.limit || 10;
     const from = query.from;

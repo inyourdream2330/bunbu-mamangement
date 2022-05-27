@@ -1,6 +1,6 @@
 import { IsDateString, IsNumberString, IsOptional } from 'class-validator';
 
-export class DaysOffFindQueryDTO {
+export class FindDaysOffQueryDTO {
   @IsNumberString()
   @IsOptional()
   page: number;

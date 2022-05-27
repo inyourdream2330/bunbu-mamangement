@@ -3,8 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { MoreThan, Repository } from 'typeorm';
 import { findDateQuery } from '../auth/ultis/common.service';
 import { User } from '../users/entities/user.entity';
-import { CreateCompensationDto } from './dto/create-compensation.dto';
-import { UpdateCompensationDto } from './dto/update-compensation.dto';
+import { CompensationDto } from './dto/compensation.dto';
 import { Compensation } from './entities/compensation.entity';
 
 @Injectable()
@@ -16,7 +15,7 @@ export class CompensationsService {
     private usersRepository: Repository<User>,
   ) {}
 
-  async createCompensation(dto: CreateCompensationDto, id) {
+  async createCompensation(dto: CompensationDto, id) {
     await this.usersRepository.findOneByOrFail({ id }).catch((err) => {
       throw new InternalServerErrorException(`User id = ${id} not exist`);
     });
@@ -27,7 +26,7 @@ export class CompensationsService {
     return { data: response, message: 'Create compensation success' };
   }
 
-  async updateCompensation(dto: UpdateCompensationDto, id) {
+  async updateCompensation(dto: CompensationDto, id) {
     await this.compensationRepository.findOneByOrFail({ id }).catch((err) => {
       throw new InternalServerErrorException(
         `Compensation id = ${id} not exist`,

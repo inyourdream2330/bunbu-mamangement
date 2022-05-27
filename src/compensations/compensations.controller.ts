@@ -14,7 +14,7 @@ import {
 import { GetCurrentUser } from '../auth/decorator/getCurrentUser.decorator';
 import { TransformInterceptor } from '../interceptor/transform.interceptor';
 import { CompensationsService } from './compensations.service';
-import { CreateCompensationDto } from './dto/create-compensation.dto';
+import { CompensationDto } from './dto/compensation.dto';
 
 @Controller('compensations')
 export class CompensationsController {
@@ -22,19 +22,13 @@ export class CompensationsController {
 
   @Post()
   @UseInterceptors(TransformInterceptor)
-  creteCompensation(
-    @Body() dto: CreateCompensationDto,
-    @GetCurrentUser() user,
-  ) {
+  creteCompensation(@Body() dto: CompensationDto, @GetCurrentUser() user) {
     return this.compensationsService.createCompensation(dto, user.id);
   }
 
   @Put(':id')
   @UseInterceptors(TransformInterceptor)
-  updateCompensation(
-    @Body() dto: CreateCompensationDto,
-    @Param('id') id: string,
-  ) {
+  updateCompensation(@Body() dto: CompensationDto, @Param('id') id: string) {
     return this.compensationsService.updateCompensation(dto, +id);
   }
 

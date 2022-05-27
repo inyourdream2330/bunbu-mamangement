@@ -15,7 +15,7 @@ import { GetCurrentUser } from '../auth/decorator/getCurrentUser.decorator';
 import { TransformInterceptor } from '../interceptor/transform.interceptor';
 import { DaysOffService } from './days-off.service';
 import { CreateDayOffDto } from './dto/create-day-off.dto';
-import { DaysOffFindQueryDTO } from './dto/findQuery.dto';
+import { FindDaysOffQueryDTO } from './dto/findQuery.dto';
 import { UpdateDayOffDto } from './dto/update-day-off.dto';
 import { updateStatusDto } from './dto/update-status.dto';
 
@@ -41,7 +41,7 @@ export class DaysOffController {
     // @Query('to', new DefaultValuePipe('')) to: string,
     // @Query('name', new DefaultValuePipe('')) name: string,
     // @Query('user_id', new DefaultValuePipe(-1), ParseIntPipe) user_id: number,
-    @Query() query: DaysOffFindQueryDTO,
+    @Query() query: FindDaysOffQueryDTO,
   ) {
     return this.daysOffService.findDaysOff(query);
   }
