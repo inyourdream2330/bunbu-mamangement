@@ -91,3 +91,11 @@ export const LOGIN_BODY_ADMIN = {
   password: '1',
   remember: false,
 };
+
+export const INIT_OVERTIME = {
+  start_at: '20:20',
+  end_at: '21:20',
+  date: '2022-05-30',
+};
+
+export const REGEX_TIME_HHMM: RegExp = /^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/;
