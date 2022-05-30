@@ -5,9 +5,10 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as argon2 from 'argon2';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import { ChangePasswordDto } from './dto/changePassword-user.dto';
 import { CreateUserDto } from './dto/create-user.dto';
+import { findUsersQueryDto } from './dto/findUserQuery.dto';
 import { User } from './entities/user.entity';
 
 @Injectable()
@@ -64,6 +65,31 @@ export class UsersService {
     }
   }
 
+  async findUsers(query: findUsersQueryDto) {
+    const page = query.page || 1;
+    const limit = query.limit || 10;
+    const name = query.name || '';
+    const email = query.email || '';
+    const code = query.code || '';
+    const sort = query.sort || 'DESC';
+    const sort_by = query.sort_by || 'id';
+
+    const skip = (page - 1) * limit;
+    const builder = this.usersRepository.createQueryBuilder('user');
+
+    builder.where(
+      'user.name LIKE :name AND user.email LIKE :email AND user.code LIKE :code',
+      { name: `%${name}%`, email: `%${email}%`, code: `%${code}%` },
+    );
+
+    builder.offset(skip).limit(limit);
+
+    builder.orderBy(`user.${sort_by}`, sort);
+
+    const response = await builder.getMany();
+
+    return { data: response, message: 'Find users success' };
+  }
   async findOneById(id: number) {
     const response = await this.usersRepository.findOneBy({ id });
     return { data: response, message: 'Get user by id success' };
