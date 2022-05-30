@@ -31,7 +31,7 @@ describe('Days Off Controller E2E Test', () => {
     overtimesService = moduleFixture.get<OvertimesService>(OvertimesService);
     usersService = moduleFixture.get<UsersService>(UsersService);
     authService = moduleFixture.get<AuthService>(AuthService);
-    await clearDB(['overtimes', 'user']);
+    await clearDB(['overtime', 'user']);
     await app.init();
 
     createUser = await usersService.create(INIT_USER_STAFF);
@@ -39,27 +39,33 @@ describe('Days Off Controller E2E Test', () => {
   });
 
   afterAll(async () => {
-    await clearDB(['overtimes', 'user']);
+    await clearDB(['overtime', 'user']);
   });
   beforeAll(async () => {});
 
-  describe('Create compensation', () => {
+  describe('Create overtime', () => {
     it('Create compensation success', async () => {
       return await request(app.getHttpServer())
         .post(`/overtimes`)
         .set('Authorization', 'Bearer ' + accessToken)
         .send(INIT_OVERTIME)
-        .expect(HttpStatus.CREATED);
+        .expect(HttpStatus.CREATED)
+        .expect((res) => {
+          expect(res.body.message).toBe('Create overtime success');
+        });
     });
 
-    it('Create compensation fail without token', async () => {
+    it('Create overtime fail without token', async () => {
       return await request(app.getHttpServer())
         .post(`/overtimes`)
         //   .set('Authorization', 'Bearer ' + accessToken)
         .send(INIT_OVERTIME)
-        .expect(HttpStatus.UNAUTHORIZED);
+        .expect(HttpStatus.UNAUTHORIZED)
+        .expect((res) => {
+          expect(res.body.message).toBe('No auth token');
+        });
     });
-    it('Create compensation with missing date', async () => {
+    it('Create overtime with missing date', async () => {
       return await request(app.getHttpServer())
         .post(`/overtimes`)
         .set('Authorization', 'Bearer ' + accessToken)
@@ -69,17 +75,8 @@ describe('Days Off Controller E2E Test', () => {
           expect(res.body.message).toContain('date should not be empty');
         });
     });
-    it('Create compensation with missing for_date', async () => {
-      return await request(app.getHttpServer())
-        .post(`/overtimes`)
-        .set('Authorization', 'Bearer ' + accessToken)
-        .send({ ...INIT_OVERTIME, for_date: '' })
-        .expect(HttpStatus.BAD_REQUEST)
-        .expect((res) => {
-          expect(res.body.message).toContain('for_date should not be empty');
-        });
-    });
-    it('Create compensation with missing start_at', async () => {
+
+    it('Create overtime with missing start_at', async () => {
       return await request(app.getHttpServer())
         .post(`/overtimes`)
         .set('Authorization', 'Bearer ' + accessToken)
@@ -89,7 +86,7 @@ describe('Days Off Controller E2E Test', () => {
           expect(res.body.message).toContain('start_at should not be empty');
         });
     });
-    it('Create compensation with missing end_at', async () => {
+    it('Create overtime with missing end_at', async () => {
       return await request(app.getHttpServer())
         .post(`/overtimes`)
         .set('Authorization', 'Bearer ' + accessToken)

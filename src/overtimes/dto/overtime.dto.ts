@@ -7,12 +7,12 @@ export class OvertimeDto {
   date: string;
   @IsNotEmpty()
   @Matches(REGEX_TIME_HHMM, {
-    message: 'start_at must be time string HH-MM',
+    message: '$property must be time string HH-MM',
   })
   start_at: string;
   @IsNotEmpty()
   @Matches(REGEX_TIME_HHMM, {
-    message: 'end_at must be time string HH-MM',
+    message: '$property must be time string HH-MM',
   })
   end_at: string;
 }
