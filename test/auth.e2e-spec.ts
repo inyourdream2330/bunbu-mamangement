@@ -1,8 +1,10 @@
-import { HttpStatus, INestApplication } from '@nestjs/common';
+import { HttpStatus, INestApplication, ValidationPipe } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
 import * as request from 'supertest';
+import { promisify } from 'util';
 import { AppModule } from '../src/app.module';
+import { AuthModule } from '../src/auth/auth.module';
 import { getCookieData } from '../src/auth/ultis/cookie.service';
 import { clearDB } from '../src/auth/ultis/DB.service';
 import { TokenService } from '../src/auth/ultis/token.service';
@@ -23,13 +25,15 @@ describe('AuthController E2E Test', () => {
   };
 
   beforeEach(async () => {
+    jest.setTimeout(150000);
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
+      imports: [AppModule, AuthModule],
     }).compile();
     app = moduleFixture.createNestApplication();
     tokenService = moduleFixture.get<TokenService>(TokenService);
     jwtService = moduleFixture.get<JwtService>(JwtService);
     await clearDB(['user']);
+    app.useGlobalPipes(new ValidationPipe());
     await app.init();
   });
 
@@ -191,5 +195,101 @@ describe('AuthController E2E Test', () => {
       });
     const cookies = getCookieData(logout.headers['set-cookie'][0]);
     expect(cookies['refresh_token']).toBeUndefined();
+  });
+
+  it('refresh access token success', async () => {
+    const accessToken = await tokenService.createAccessToken(ADMIN_JWT_PAYLOAD);
+    const createUser = await request(app.getHttpServer())
+      .post('/users')
+      .set('Authorization', 'Bearer ' + accessToken)
+      .send(INIT_USER_STAFF);
+
+    const login = await request(app.getHttpServer())
+      .post('/auth/login')
+      .send({ ...loginBody, remember: true })
+      .expect(HttpStatus.OK)
+      .expect((res) => {
+        expect(res.body.message).toBe('Login Success');
+      })
+      .then(async (res) => {
+        await request(app.getHttpServer())
+          .post('/auth/refresh')
+          .send({
+            refresh_token: res.body.data.refresh_token,
+          })
+          .expect(HttpStatus.OK)
+          .expect((res) => {
+            expect(res.body.message).toBe('Refresh token success');
+            expect(res.body.data.refresh_token).toMatch(REGEX_JWT);
+          });
+      });
+  });
+
+  it('refresh token malformed', async () => {
+    const refresh = await request(app.getHttpServer())
+      .post('/auth/refresh')
+      .send({
+        refresh_token: 'Super-wrong-refresh-token',
+      })
+      .expect(HttpStatus.BAD_REQUEST);
+  });
+
+  it('User not login(refresh_token = null in db), or not have user ', async () => {
+    const accessToken = await tokenService.createAccessToken(ADMIN_JWT_PAYLOAD);
+    const refreshToken = await tokenService.createRefreshToken(
+      ADMIN_JWT_PAYLOAD,
+      false,
+    );
+    const createUser = await request(app.getHttpServer())
+      .post('/users')
+      .set('Authorization', 'Bearer ' + accessToken)
+      .send(INIT_USER_STAFF);
+
+    const refresh = await request(app.getHttpServer())
+      .post('/auth/refresh')
+      .send({
+        refresh_token: refreshToken,
+      })
+      .expect(HttpStatus.UNAUTHORIZED)
+      .expect((res) => {
+        expect(res.body.message).toBe('Access Denied');
+      });
+  });
+
+  it('User have refresh token in db but not match with refresh token client send to', async () => {
+    const accessToken = await tokenService.createAccessToken(ADMIN_JWT_PAYLOAD);
+    const createUser = await request(app.getHttpServer())
+      .post('/users')
+      .set('Authorization', 'Bearer ' + accessToken)
+      .send(INIT_USER_STAFF);
+
+    const loginAndGetNewRFToken = await request(app.getHttpServer())
+      .post('/auth/login')
+      .send({ ...loginBody, remember: true })
+      .expect(HttpStatus.OK)
+      .expect((res) => {
+        expect(res.body.message).toBe('Login Success');
+      })
+      .then(async (res) => {
+        return await tokenService.createRefreshToken(
+          {
+            id: res.body.data.id,
+            email: res.body.data.email,
+            role: res.body.data.role,
+            remember: true,
+          },
+          true,
+        );
+      });
+
+    const refresh = await request(app.getHttpServer())
+      .post('/auth/refresh')
+      .send({
+        refresh_token: loginAndGetNewRFToken,
+      })
+      .expect(HttpStatus.UNAUTHORIZED)
+      .expect((res) => {
+        expect(res.body.message).toBe('Refresh token not match in database');
+      });
   });
 });
