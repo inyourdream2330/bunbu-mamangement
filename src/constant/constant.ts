@@ -109,6 +109,12 @@ export const LOGIN_BODY_ADMIN = {
   remember: false,
 };
 
+export const INIT_COMPENSATIONS = {
+  date: '2022-05-24',
+  for_date: '2022-05-25',
+  start_at: '20:00',
+  end_at: '21:00',
+};
 export const INIT_DAYOFF = {
   date: '2022-05-11',
   reasons: 'Đau pụng ẻ',
