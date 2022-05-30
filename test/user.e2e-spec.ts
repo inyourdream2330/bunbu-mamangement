@@ -5,6 +5,7 @@ import { clearDB } from '../src/auth/ultis/DB.service';
 import { TokenService } from '../src/auth/ultis/token.service';
 import {
   ADMIN_JWT_PAYLOAD,
+  INIT_USER_ADMIN,
   INIT_USER_STAFF,
   STAFF_JWT_PAYLOAD,
   UPDATE_USER_DATA,
@@ -427,6 +428,26 @@ describe('UsersController E2E Test', () => {
       .expect(HttpStatus.UNAUTHORIZED)
       .expect((res) => {
         expect(res.body.message).toBe('Permission denied');
+      });
+  });
+
+  it('get users', async () => {
+    const accessToken = await tokenService.createAccessToken(ADMIN_JWT_PAYLOAD);
+    const getUsers = await request(app.getHttpServer())
+      .get('/users')
+      .set('Authorization', 'Bearer ' + accessToken)
+      .query({
+        page: '1',
+        limit: '10',
+        name: '',
+        email: '',
+        code: '',
+        sort: '',
+        sort_by: '',
+      })
+      .expect(HttpStatus.OK)
+      .expect((res) => {
+        expect(res.body.message).toBe('Find users success');
       });
   });
 });
