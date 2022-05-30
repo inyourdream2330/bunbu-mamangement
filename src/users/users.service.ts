@@ -74,8 +74,6 @@ export class UsersService {
     const sort = query.sort || 'DESC';
     const sort_by = query.sort_by || 'id';
 
-    console.log(name + '-' + email);
-
     const skip = (page - 1) * limit;
     const builder = this.usersRepository.createQueryBuilder('user');
 
