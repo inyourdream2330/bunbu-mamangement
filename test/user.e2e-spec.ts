@@ -442,7 +442,7 @@ describe('UsersController E2E Test', () => {
         name: '',
         email: '',
         code: '',
-        sort: '',
+        sort: 'ASC',
         sort_by: '',
       })
       .expect(HttpStatus.OK)
