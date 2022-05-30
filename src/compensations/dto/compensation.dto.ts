@@ -1,11 +1,11 @@
-import { IsDateString, IsNotEmpty, Matches } from 'class-validator';
+import { IsDateString, IsISO8601, IsNotEmpty, Matches } from 'class-validator';
 
 export class CompensationDto {
   @IsNotEmpty()
-  @IsDateString()
+  @IsISO8601({ strict: true })
   date: string;
   @IsNotEmpty()
-  @IsDateString()
+  @IsISO8601({ strict: true })
   for_date: string;
   @IsNotEmpty()
   @Matches(/^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/, {
