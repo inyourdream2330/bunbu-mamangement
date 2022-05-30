@@ -25,6 +25,8 @@ export class User {
   joining_date: string;
   @Column({ type: 'date' })
   dob: string;
+  @Column()
+  position: number;
 
   @Column({ length: 20, type: 'nvarchar', unique: true, default: 'B000000' })
   code: string;

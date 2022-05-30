@@ -7,7 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import * as argon2 from 'argon2';
 import { Like, Repository } from 'typeorm';
 import { ChangePasswordDto } from './dto/changePassword-user.dto';
-import { CreateUserDto } from './dto/create-user.dto';
+import { UserDto } from './dto/user.dto';
 import { findUsersQueryDto } from './dto/findUserQuery.dto';
 import { User } from './entities/user.entity';
 
@@ -18,7 +18,7 @@ export class UsersService {
     private usersRepository: Repository<User>,
   ) {}
 
-  async create(createUserDto: CreateUserDto) {
+  async create(createUserDto: UserDto) {
     const [emailExists] = await this.usersRepository.findBy({
       email: createUserDto.email,
     });
@@ -65,6 +65,11 @@ export class UsersService {
     }
   }
 
+  async updateUser(id: number, userDto: UserDto) {
+    const response = await this.usersRepository.save({ id, ...userDto });
+    return { data: response, message: `Update user ${id} success` };
+  }
+
   async findUsers(query: findUsersQueryDto) {
     const page = query.page || 1;
     const limit = query.limit || 10;
@@ -73,6 +78,7 @@ export class UsersService {
     const code = query.code || '';
     const sort = query.sort || 'DESC';
     const sort_by = query.sort_by || 'id';
+    console.log(sort);
 
     const skip = (page - 1) * limit;
     const builder = this.usersRepository.createQueryBuilder('user');

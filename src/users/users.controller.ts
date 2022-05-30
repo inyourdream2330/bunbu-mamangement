@@ -8,6 +8,7 @@ import {
   Param,
   ParseIntPipe,
   Post,
+  Put,
   Query,
   UseInterceptors,
 } from '@nestjs/common';
@@ -16,7 +17,7 @@ import { Roles } from '../auth/decorator/role.decorator';
 import { ROLE } from '../constant/constant';
 import { TransformInterceptor } from '../interceptor/transform.interceptor';
 import { ChangePasswordDto } from './dto/changePassword-user.dto';
-import { CreateUserDto } from './dto/create-user.dto';
+import { UserDto } from './dto/user.dto';
 import { findUsersQueryDto } from './dto/findUserQuery.dto';
 import { UsersService } from './users.service';
 
@@ -28,7 +29,7 @@ export class UsersController {
   @HttpCode(HttpStatus.CREATED)
   @UseInterceptors(TransformInterceptor)
   @Roles(ROLE.ADMIN)
-  create(@Body() createUserDto: CreateUserDto) {
+  create(@Body() createUserDto: UserDto) {
     return this.usersService.create(createUserDto);
   }
 
@@ -42,6 +43,13 @@ export class UsersController {
     return this.usersService.updatePassword(user.id, changePasswordDto);
   }
 
+  @Put(':id')
+  @Roles(ROLE.ADMIN)
+  @HttpCode(HttpStatus.OK)
+  @UseInterceptors(TransformInterceptor)
+  updateUser(@Param('id') id: string, @Body() userDto: UserDto) {
+    return this.usersService.updateUser(+id, userDto);
+  }
   @Get()
   @HttpCode(HttpStatus.OK)
   @UseInterceptors(TransformInterceptor)
