@@ -32,6 +32,7 @@ export class DaysOffService {
     const skip = (page - 1) * limit;
     const builder = this.daysOffRepository.createQueryBuilder('dayoff');
     builder.leftJoinAndSelect('dayoff.user', 'user');
+    // builder.where('dayoff.is_deleted = 0');  --- uncomment after merge delete day off pull request
     builder.where('dayoff.date BETWEEN :from AND :to', { from, to });
     if (user_id) {
       builder.where('dayoff.user = :user_id', { user_id });
