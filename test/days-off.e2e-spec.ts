@@ -12,6 +12,7 @@ import {
   INIT_USER_STAFF,
   STAFF_JWT_PAYLOAD,
 } from '../src/constant/constant';
+import { DaysOffService } from '../src/day-off/days-off.service';
 import { UsersService } from '../src/users/users.service';
 
 describe('Days Off Controller E2E Test', () => {
@@ -20,6 +21,7 @@ describe('Days Off Controller E2E Test', () => {
   let usersService: UsersService;
   let authController: AuthController;
   let authService: AuthService;
+  let daysOffService: DaysOffService;
   let createUser;
   let loginUserAccessToken;
 
@@ -34,6 +36,8 @@ describe('Days Off Controller E2E Test', () => {
     usersService = moduleFixture.get<UsersService>(UsersService);
     authController = moduleFixture.get<AuthController>(AuthController);
     authService = moduleFixture.get<AuthService>(AuthService);
+    daysOffService = moduleFixture.get<DaysOffService>(DaysOffService);
+
     await clearDB(['day_off']);
     await clearDB(['user']);
     await app.init();
@@ -100,6 +104,33 @@ describe('Days Off Controller E2E Test', () => {
         .expect(HttpStatus.BAD_REQUEST)
         .expect((res) => {
           expect(res.body.message).toContain('type should not be empty');
+        });
+    });
+  });
+  describe('Find days off', () => {
+    let createDaysOff;
+    beforeEach(async () => {
+      createDaysOff = await daysOffService.createDayOff(
+        INIT_DAYOFF,
+        createUser.data.id,
+      );
+    });
+
+    it('find day off success', async () => {
+      return await request(app.getHttpServer())
+        .get('/days-off')
+        .set('Authorization', 'Bearer ' + loginUserAccessToken)
+        .expect(HttpStatus.OK)
+        .expect((res) => {
+          expect(res.body.message).toContain('Find days off success');
+        });
+    });
+    it('find day off missing auth token', async () => {
+      return await request(app.getHttpServer())
+        .get('/days-off')
+        .expect(HttpStatus.OK)
+        .expect((res) => {
+          expect(res.body.message).toContain('Find days off success');
         });
     });
   });
