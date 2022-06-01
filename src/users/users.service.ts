@@ -78,7 +78,6 @@ export class UsersService {
     const code = query.code || '';
     const sort = query.sort || 'DESC';
     const sort_by = query.sort_by || 'id';
-    console.log(sort);
 
     const skip = (page - 1) * limit;
     const builder = this.usersRepository.createQueryBuilder('user');
@@ -99,5 +98,18 @@ export class UsersService {
   async findOneById(id: number) {
     const response = await this.usersRepository.findOneBy({ id });
     return { data: response, message: 'Get user by id success' };
+  }
+
+  async deleteUser(id: number) {
+    await this.usersRepository.findOneByOrFail({ id }).catch(() => {
+      throw new InternalServerErrorException(`User id = ${id} not exist`);
+    });
+
+    const response = await this.usersRepository.update(
+      { id },
+      { is_deleted: true },
+    );
+
+    return { data: response, message: `User id = ${id} delete success` };
   }
 }

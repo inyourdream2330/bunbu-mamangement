@@ -450,4 +450,53 @@ describe('UsersController E2E Test', () => {
         expect(res.body.message).toBe('Find users success');
       });
   });
+
+  describe('Delete user', () => {
+    let createUser;
+    beforeEach(async () => {
+      createUser = await usersService.create(INIT_USER_STAFF);
+    });
+
+    it('Delete user success', async () => {
+      return await request(app.getHttpServer())
+        .delete(`/users/${createUser.data.id}`)
+        .set('Authorization', 'Bearer ' + accessTokenAdmin)
+        .expect(HttpStatus.OK)
+        .expect((res) => {
+          expect(res.body.message).toBe(
+            `User id = ${createUser.data.id} delete success`,
+          );
+        });
+    });
+
+    it('Delete user fail without token', async () => {
+      return await request(app.getHttpServer())
+        .delete(`/users/${createUser.data.id}`)
+        .expect(HttpStatus.UNAUTHORIZED)
+        .expect((res) => {
+          expect(res.body.message).toBe(`No auth token`);
+        });
+    });
+
+    it('Delete user fail without permission', async () => {
+      return await request(app.getHttpServer())
+        .delete(`/users/${createUser.data.id}`)
+        .set('Authorization', 'Bearer ' + accessTokenStaff)
+        .expect(HttpStatus.UNAUTHORIZED)
+        .expect((res) => {
+          expect(res.body.message).toBe(`Permission denied`);
+        });
+    });
+
+    it('Delete user fail with not exist user id', async () => {
+      const fakeId = -1;
+      return await request(app.getHttpServer())
+        .delete(`/users/${fakeId}`)
+        .set('Authorization', 'Bearer ' + accessTokenAdmin)
+        .expect(HttpStatus.INTERNAL_SERVER_ERROR)
+        .expect((res) => {
+          expect(res.body.message).toBe(`User id = ${fakeId} not exist`);
+        });
+    });
+  });
 });
