@@ -125,12 +125,13 @@ describe('Days Off Controller E2E Test', () => {
           expect(res.body.message).toContain('Find days off success');
         });
     });
+
     it('find day off missing auth token', async () => {
       return await request(app.getHttpServer())
         .get('/days-off')
-        .expect(HttpStatus.OK)
+        .expect(HttpStatus.UNAUTHORIZED)
         .expect((res) => {
-          expect(res.body.message).toContain('Find days off success');
+          expect(res.body.message).toContain('No auth token');
         });
     });
   });
