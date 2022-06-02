@@ -78,7 +78,6 @@ export class UsersService {
     const code = query.code || '';
     const sort = query.sort || 'DESC';
     const sort_by = query.sort_by || 'id';
-    console.log(sort);
 
     const skip = (page - 1) * limit;
     const builder = this.usersRepository.createQueryBuilder('user');
