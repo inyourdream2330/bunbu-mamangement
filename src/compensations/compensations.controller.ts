@@ -1,4 +1,11 @@
-import { Body, Controller, Post, UseInterceptors } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Param,
+  Post,
+  UseInterceptors,
+} from '@nestjs/common';
 import { GetCurrentUser } from '../auth/decorator/getCurrentUser.decorator';
 import { TransformInterceptor } from '../interceptor/transform.interceptor';
 import { CompensationsService } from './compensations.service';
@@ -12,5 +19,11 @@ export class CompensationsController {
   @UseInterceptors(TransformInterceptor)
   creteCompensation(@Body() dto: CompensationDto, @GetCurrentUser() user) {
     return this.compensationsService.createCompensation(dto, user.id);
+  }
+
+  @Delete(':id')
+  @UseInterceptors(TransformInterceptor)
+  deleteConpensation(@Param('id') id: string) {
+    return this.compensationsService.deleteCompensation(+id);
   }
 }
