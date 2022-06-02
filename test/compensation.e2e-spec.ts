@@ -101,4 +101,35 @@ describe('Days Off Controller E2E Test', () => {
         });
     });
   });
+
+  describe('Delete conpensation', () => {
+    let createCompensation;
+    beforeEach(async () => {
+      createCompensation = await compensationsService.createCompensation(
+        INIT_COMPENSATIONS,
+        createUser.data.id,
+      );
+    });
+
+    it('Delete compensation success', async () => {
+      return await request(app.getHttpServer())
+        .delete(`/compensations/${createCompensation.data.id}`)
+        .set('Authorization', 'Bearer ' + accessToken)
+        .expect(HttpStatus.OK);
+    });
+
+    it('Delete compensation fail, without token', async () => {
+      return await request(app.getHttpServer())
+        .delete(`/compensations/${createCompensation.data.id}`)
+        .expect(HttpStatus.UNAUTHORIZED);
+    });
+
+    it('Delete compensation fail, with not exist compensation', async () => {
+      const fakeCompensationId = -1;
+      return await request(app.getHttpServer())
+        .delete(`/compensations/${fakeCompensationId}`)
+        .set('Authorization', 'Bearer ' + accessToken)
+        .expect(HttpStatus.INTERNAL_SERVER_ERROR);
+    });
+  });
 });

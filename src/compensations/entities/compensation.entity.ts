@@ -23,4 +23,6 @@ export class Compensation {
   end_at: Date;
   @Column({ default: 0 })
   status: number;
+  @Column({ default: false })
+  is_deleted: boolean;
 }
