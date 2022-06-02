@@ -101,4 +101,22 @@ describe('Days Off Controller E2E Test', () => {
         });
     });
   });
+  describe('Find compensation', () => {
+    let createCompensation;
+    beforeEach(async () => {
+      createCompensation = await compensationsService.createCompensation(
+        INIT_COMPENSATIONS,
+        createUser.data.id,
+      );
+    });
+    it('Find compensation success', async () => {
+      return await request(app.getHttpServer())
+        .get('/compensations')
+        .set('Authorization', 'Bearer ' + accessToken)
+        .expect(HttpStatus.OK)
+        .expect((res) => {
+          expect(res.body.message).toBe(`Find compensations success`);
+        });
+    });
+  });
 });

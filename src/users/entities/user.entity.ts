@@ -40,4 +40,6 @@ export class User {
   official_date: string;
   @Column({ nullable: true, type: 'text' })
   hash_refresh_token: string;
+  @Column({ default: false })
+  is_deleted: boolean;
 }
