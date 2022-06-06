@@ -101,4 +101,48 @@ describe('Days Off Controller E2E Test', () => {
         });
     });
   });
+
+  describe('Find one compensation', () => {
+    let createCompensation;
+    beforeEach(async () => {
+      createCompensation = await compensationsService.createCompensation(
+        INIT_COMPENSATIONS,
+        createUser.data.id,
+      );
+    });
+
+    it('Find one compensation success', async () => {
+      return await request(app.getHttpServer())
+        .get(`/compensations/${createCompensation.data.id}`)
+        .set('Authorization', 'Bearer ' + accessToken)
+        .expect(HttpStatus.OK)
+        .expect((res) => {
+          expect(res.body.message).toBe(
+            `Compensation id = ${createCompensation.data.id} get data success`,
+          );
+        });
+    });
+
+    it('Find one compensation fail, missing auth token', async () => {
+      return await request(app.getHttpServer())
+        .get(`/compensations/${createCompensation.data.id}`)
+        .expect(HttpStatus.UNAUTHORIZED)
+        .expect((res) => {
+          expect(res.body.message).toBe(`No auth token`);
+        });
+    });
+
+    it('Find one compensation fail, day off not exist', async () => {
+      const fakeId = -1;
+      return await request(app.getHttpServer())
+        .get(`/compensations/${fakeId}`)
+        .set('Authorization', 'Bearer ' + accessToken)
+        .expect(HttpStatus.INTERNAL_SERVER_ERROR)
+        .expect((res) => {
+          expect(res.body.message).toBe(
+            `Compensation id = ${fakeId} not exist`,
+          );
+        });
+    });
+  });
 });

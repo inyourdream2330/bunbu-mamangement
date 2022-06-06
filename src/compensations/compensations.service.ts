@@ -24,4 +24,18 @@ export class CompensationsService {
     });
     return { data: response, message: 'Create compensation success' };
   }
+
+  async findOneCompensationById(id: number) {
+    const response = await this.compensationRepository
+      .findOneByOrFail({ id })
+      .catch(() => {
+        throw new InternalServerErrorException(
+          `Compensation id = ${id} not exist`,
+        );
+      });
+    return {
+      data: response,
+      message: `Compensation id = ${id} get data success`,
+    };
+  }
 }
