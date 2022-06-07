@@ -9,6 +9,7 @@ import { AuthModule } from './auth/auth.module';
 import { JWTGuard } from './auth/guard/JWT.guard';
 import { typeOrmConfigAsync } from './config/typeorm.config';
 import { UsersModule } from './users/users.module';
+import { OvertimesModule } from './overtimes/overtimes.module';
 import { CompensationsModule } from './compensations/compensations.module';
 import { DayOffModule } from './day-off/days-off.module';
 
@@ -22,6 +23,7 @@ import { DayOffModule } from './day-off/days-off.module';
     JwtModule.register({}),
     UsersModule,
     AuthModule,
+    OvertimesModule,
     CompensationsModule,
     DayOffModule,
   ],

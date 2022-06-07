@@ -21,6 +21,7 @@ describe('Days Off Controller E2E Test', () => {
   let usersService: UsersService;
   let authController: AuthController;
   let authService: AuthService;
+  let daysOffService: DaysOffService;
   let createUser;
   let daysOffService: DaysOffService;
   let loginUserAccessToken;
@@ -53,28 +54,27 @@ describe('Days Off Controller E2E Test', () => {
   });
   beforeAll(async () => {});
 
-  it('Create day off success', async () => {
-    return await request(app.getHttpServer())
-      .post('/days-off')
-      .set('Authorization', 'Bearer ' + loginUserAccessToken)
-      .send(INIT_DAYOFF)
-      .expect(HttpStatus.CREATED)
-      .expect((res) => {
-        expect(res.body.message).toBe('Create day off success');
-      });
-  });
+  describe('Create day off', () => {
+    it('Create day off success', async () => {
+      return await request(app.getHttpServer())
+        .post('/days-off')
+        .set('Authorization', 'Bearer ' + loginUserAccessToken)
+        .send(INIT_DAYOFF)
+        .expect(HttpStatus.CREATED)
+        .expect((res) => {
+          expect(res.body.message).toBe('Create day off success');
+        });
+    });
 
-  it('Create day off without jwt token', async () => {
-    return await request(app.getHttpServer())
-      .post('/days-off')
-      .send(INIT_DAYOFF)
-      .expect(HttpStatus.UNAUTHORIZED)
-      .expect((res) => {
-        expect(res.body.message).toBe('No auth token');
-      });
-  });
-
-  describe('Create day off missing required field', () => {
+    it('Create day off without jwt token', async () => {
+      return await request(app.getHttpServer())
+        .post('/days-off')
+        .send(INIT_DAYOFF)
+        .expect(HttpStatus.UNAUTHORIZED)
+        .expect((res) => {
+          expect(res.body.message).toBe('No auth token');
+        });
+    });
     it('Create day off missing date', async () => {
       return await request(app.getHttpServer())
         .post('/days-off')
@@ -107,7 +107,12 @@ describe('Days Off Controller E2E Test', () => {
         });
     });
   });
+<<<<<<< HEAD
   describe('delete day off', () => {
+=======
+
+  describe('Updatte day off', () => {
+>>>>>>> 9967030b649f01a84f2f64fa177cec2c00caebed
     let createDaysOff;
     beforeEach(async () => {
       createDaysOff = await daysOffService.createDayOff(
@@ -116,6 +121,7 @@ describe('Days Off Controller E2E Test', () => {
       );
     });
 
+<<<<<<< HEAD
     it('delete day off success', async () => {
       return await request(app.getHttpServer())
         .delete(`/days-off/${createDaysOff.data.id}`)
@@ -146,6 +152,60 @@ describe('Days Off Controller E2E Test', () => {
           expect(res.body.message).toContain(
             `Day off id = ${fakeId} not exist`,
           );
+=======
+    it('Update day off success', async () => {
+      return await request(app.getHttpServer())
+        .put(`/days-off/${createDaysOff.data.id}`)
+        .set('Authorization', 'Bearer ' + loginUserAccessToken)
+        .send({ ...INIT_DAYOFF, reasons: 'Reasons updated' })
+        .expect(HttpStatus.OK)
+        .expect((res) => {
+          expect(res.body.message).toBe(
+            `Update day off id = ${createDaysOff.data.id} success`,
+          );
+        });
+    });
+
+    it('Update day off without token', async () => {
+      await request(app.getHttpServer())
+        .put(`/days-off/${createDaysOff.data.id}`)
+        .send({ ...INIT_DAYOFF, reasons: 'Reasons updated' })
+        .expect(HttpStatus.UNAUTHORIZED)
+        .expect((res) => {
+          expect(res.body.message).toBe('No auth token');
+        });
+    });
+
+    it('Update day off missing date', async () => {
+      return await request(app.getHttpServer())
+        .put(`/days-off/${createDaysOff.data.id}`)
+        .set('Authorization', 'Bearer ' + loginUserAccessToken)
+        .send({ ...INIT_DAYOFF, date: '' })
+        .expect(HttpStatus.BAD_REQUEST)
+        .expect((res) => {
+          expect(res.body.message).toContain('date should not be empty');
+        });
+    });
+
+    it('Update day off missing reasons', async () => {
+      return await request(app.getHttpServer())
+        .put(`/days-off/${createDaysOff.data.id}`)
+        .set('Authorization', 'Bearer ' + loginUserAccessToken)
+        .send({ ...INIT_DAYOFF, reasons: '' })
+        .expect(HttpStatus.BAD_REQUEST)
+        .expect((res) => {
+          expect(res.body.message).toContain('reasons should not be empty');
+        });
+    });
+    it('Update day off missing type', async () => {
+      return await request(app.getHttpServer())
+        .put(`/days-off/${createDaysOff.data.id}`)
+        .set('Authorization', 'Bearer ' + loginUserAccessToken)
+        .send({ ...INIT_DAYOFF, type: '' })
+        .expect(HttpStatus.BAD_REQUEST)
+        .expect((res) => {
+          expect(res.body.message).toContain('type should not be empty');
+>>>>>>> 9967030b649f01a84f2f64fa177cec2c00caebed
         });
     });
   });
