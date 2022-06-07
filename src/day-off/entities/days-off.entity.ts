@@ -21,4 +21,6 @@ export class DayOff {
   user: User;
   @Column()
   type: number;
+  @Column({ default: false })
+  is_deleted: boolean;
 }

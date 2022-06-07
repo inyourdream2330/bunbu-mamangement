@@ -11,6 +11,7 @@ export interface Response<T> {
   statusCode: number;
   message: string;
   data: T;
+  total: number;
 }
 
 @Injectable()
@@ -26,6 +27,7 @@ export class TransformInterceptor<T>
         statusCode: context.switchToHttp().getResponse().statusCode,
         message: data.message,
         data: data.data,
+        total: data.total,
       })),
     );
   }
