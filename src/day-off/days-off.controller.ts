@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Param,
   Post,
   Put,
@@ -21,6 +22,11 @@ export class DaysOffController {
     return this.daysOffService.createDayOff(createDayOffDto, user.id);
   }
 
+  @Delete(':id')
+  @UseInterceptors(TransformInterceptor)
+  deleteDayOff(@Param('id') id: string) {
+    return this.daysOffService.deleteDayOff(+id);
+  }
   @Put(':id')
   @UseInterceptors(TransformInterceptor)
   updateDayOff(@Param('id') id: string, @Body() dto: DayOffDto) {

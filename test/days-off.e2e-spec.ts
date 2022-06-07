@@ -23,6 +23,7 @@ describe('Days Off Controller E2E Test', () => {
   let authService: AuthService;
   let daysOffService: DaysOffService;
   let createUser;
+  let daysOffService: DaysOffService;
   let loginUserAccessToken;
 
   beforeEach(async () => {
@@ -106,8 +107,12 @@ describe('Days Off Controller E2E Test', () => {
         });
     });
   });
+<<<<<<< HEAD
+  describe('delete day off', () => {
+=======
 
   describe('Updatte day off', () => {
+>>>>>>> 9967030b649f01a84f2f64fa177cec2c00caebed
     let createDaysOff;
     beforeEach(async () => {
       createDaysOff = await daysOffService.createDayOff(
@@ -116,6 +121,38 @@ describe('Days Off Controller E2E Test', () => {
       );
     });
 
+<<<<<<< HEAD
+    it('delete day off success', async () => {
+      return await request(app.getHttpServer())
+        .delete(`/days-off/${createDaysOff.data.id}`)
+        .set('Authorization', 'Bearer ' + loginUserAccessToken)
+        .expect(HttpStatus.OK)
+        .expect((res) => {
+          expect(res.body.message).toContain(
+            `Day off id = ${createDaysOff.data.id} delete success`,
+          );
+        });
+    });
+    it('delete day off without auth token', async () => {
+      return await request(app.getHttpServer())
+        .delete(`/days-off/${createDaysOff.data.id}`)
+        .expect(HttpStatus.UNAUTHORIZED)
+        .expect((res) => {
+          expect(res.body.message).toContain(`No auth token`);
+        });
+    });
+
+    it('delete day off with not exist day off', async () => {
+      const fakeId = -1;
+      return await request(app.getHttpServer())
+        .delete(`/days-off/${fakeId}`)
+        .set('Authorization', 'Bearer ' + loginUserAccessToken)
+        .expect(HttpStatus.INTERNAL_SERVER_ERROR)
+        .expect((res) => {
+          expect(res.body.message).toContain(
+            `Day off id = ${fakeId} not exist`,
+          );
+=======
     it('Update day off success', async () => {
       return await request(app.getHttpServer())
         .put(`/days-off/${createDaysOff.data.id}`)
@@ -168,6 +205,7 @@ describe('Days Off Controller E2E Test', () => {
         .expect(HttpStatus.BAD_REQUEST)
         .expect((res) => {
           expect(res.body.message).toContain('type should not be empty');
+>>>>>>> 9967030b649f01a84f2f64fa177cec2c00caebed
         });
     });
   });
