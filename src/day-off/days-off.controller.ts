@@ -4,6 +4,8 @@ import {
   Get,
   Post,
   Query,
+  Param,
+  Put,
   UseInterceptors,
 } from '@nestjs/common';
 import { GetCurrentUser } from '../auth/decorator/getCurrentUser.decorator';
@@ -26,5 +28,11 @@ export class DaysOffController {
   @UseInterceptors(TransformInterceptor)
   findDayOffs(@Query() query: FindDaysOffQueryDTO) {
     return this.daysOffService.findDaysOff(query);
+  }
+
+  @Put(':id')
+  @UseInterceptors(TransformInterceptor)
+  updateDayOff(@Param('id') id: string, @Body() dto: DayOffDto) {
+    return this.daysOffService.updateDayOff(+id, dto);
   }
 }

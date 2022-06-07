@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { DayOffDto } from './dto/day-off.dto';
@@ -46,5 +46,18 @@ export class DaysOffService {
     const response = await builder.getMany();
 
     return { data: response, message: 'Find days off success' };
+  }
+
+  async updateDayOff(id: number, dto: DayOffDto) {
+    await this.daysOffRepository.findOneByOrFail({ id }).catch((err) => {
+      throw new InternalServerErrorException(`Day off id = ${id} not exist`);
+    });
+    const response = await this.daysOffRepository.update(
+      { id },
+      {
+        ...dto,
+      },
+    );
+    return { message: `Update day off id = ${id} success` };
   }
 }
