@@ -1,9 +1,10 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Between, MoreThan, Repository } from 'typeorm';
 import { DayOffDto } from './dto/day-off.dto';
 import { DayOff } from './entities/days-off.entity';
 import { format, subDays, addDays } from 'date-fns';
+import { DAYOFF_SAMPLE_TEST_DATA } from '../constant/sampleTestData';
 
 @Injectable()
 export class DaysOffService {
@@ -25,27 +26,27 @@ export class DaysOffService {
     const limit = query.limit || 10;
     const from = query.from || format(subDays(new Date(), 10), 'yyyy-MM-dd');
     const to = query.to || format(addDays(new Date(), 10), 'yyyy-MM-dd');
-    const user_id = query.user_id;
     const sort = query.sort || 'DESC';
     const sort_by = query.sort_by || 'id';
 
     const skip = (page - 1) * limit;
-    const builder = this.daysOffRepository.createQueryBuilder('dayoff');
-    builder.leftJoinAndSelect('dayoff.user', 'user');
-    builder.where('dayoff.is_deleted = 0');
-    builder.andWhere('user.is_deleted = 0');
-    builder.andWhere('dayoff.date BETWEEN :from AND :to', { from, to });
-    if (user_id) {
-      builder.andWhere('dayoff.user = :user_id', { user_id });
-    }
 
-    builder.offset(skip).limit(limit);
+    const [response, total] = await this.daysOffRepository.findAndCount({
+      where: {
+        date: Between(from, to),
+        user: {
+          is_deleted: false,
+        },
+        is_deleted: false,
+      },
+      order: {
+        [sort_by]: sort,
+      },
+      skip: skip,
+      take: limit,
+    });
 
-    builder.orderBy(`dayoff.${sort_by}`, sort);
-
-    const response = await builder.getMany();
-
-    return { data: response, message: 'Find days off success' };
+    return { data: response, total, message: 'Find days off success' };
   }
 
   async updateDayOff(id: number, dto: DayOffDto) {
@@ -59,5 +60,13 @@ export class DaysOffService {
       },
     );
     return { message: `Update day off id = ${id} success` };
+  }
+
+  async importDataForTest(userId) {
+    const data = DAYOFF_SAMPLE_TEST_DATA.map((data) => ({
+      ...data,
+      user: userId,
+    }));
+    return await this.daysOffRepository.save(data);
   }
 }
