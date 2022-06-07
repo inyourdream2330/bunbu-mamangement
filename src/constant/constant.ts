@@ -7,8 +7,8 @@ export const enum USER_STATUS {
 }
 
 export const enum DAYOFF_STATUS {
-  CONFIRMED = 0,
-  WAITING = 1,
+  WAITING = 0,
+  CONFIRMED = 1,
   REJECTED = 2,
 }
 
@@ -49,6 +49,23 @@ export const INIT_USER_ADMIN = {
   official_date: '2021-11-11',
   role: 1,
   position: 1,
+};
+
+export const UPDATE_USER_DATA = {
+  name: 'update',
+  email: 'update@gmail.com',
+  gender: 1,
+  id_card: 'id_card',
+  address: 'Hà Nội',
+  joining_date: '2021-11-11',
+  dob: '2021-11-11',
+  status: 1,
+  phone: '12345678',
+  contract_type: 1,
+  official_date: '2021-11-11',
+  role: 1,
+  position: 1,
+  code: 'CODEUPDATE',
 };
 
 export const INIT_USER_STAFF = {
@@ -99,3 +116,14 @@ export const INIT_OVERTIME = {
 };
 
 export const REGEX_TIME_HHMM: RegExp = /^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/;
+export const INIT_COMPENSATIONS = {
+  date: '2022-05-24',
+  for_date: '2022-05-25',
+  start_at: '20:00',
+  end_at: '21:00',
+};
+export const INIT_DAYOFF = {
+  date: '2022-05-11',
+  reasons: 'Đau pụng ẻ',
+  type: 1,
+};
