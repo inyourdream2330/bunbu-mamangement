@@ -1,4 +1,11 @@
-import { Body, Controller, Post, UseInterceptors } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Param,
+  Post,
+  Put,
+  UseInterceptors,
+} from '@nestjs/common';
 import { GetCurrentUser } from '../auth/decorator/getCurrentUser.decorator';
 import { TransformInterceptor } from '../interceptor/transform.interceptor';
 import { DaysOffService } from './days-off.service';
@@ -12,5 +19,11 @@ export class DaysOffController {
   @UseInterceptors(TransformInterceptor)
   createDayOff(@Body() createDayOffDto: DayOffDto, @GetCurrentUser() user) {
     return this.daysOffService.createDayOff(createDayOffDto, user.id);
+  }
+
+  @Put(':id')
+  @UseInterceptors(TransformInterceptor)
+  updateDayOff(@Param('id') id: string, @Body() dto: DayOffDto) {
+    return this.daysOffService.updateDayOff(+id, dto);
   }
 }
