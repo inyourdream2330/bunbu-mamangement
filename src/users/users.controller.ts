@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   DefaultValuePipe,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -56,5 +57,13 @@ export class UsersController {
   @Roles(ROLE.ADMIN)
   getUsers(@Query() query: findUsersQueryDto) {
     return this.usersService.findUsers(query);
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.OK)
+  @UseInterceptors(TransformInterceptor)
+  @Roles(ROLE.ADMIN)
+  deleteUser(@Param('id') id: string) {
+    return this.usersService.deleteUser(+id);
   }
 }
