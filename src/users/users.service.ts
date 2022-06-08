@@ -2,6 +2,7 @@ import {
   HttpStatus,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as argon2 from 'argon2';
@@ -102,7 +103,7 @@ export class UsersService {
 
   async deleteUser(id: number) {
     await this.usersRepository.findOneByOrFail({ id }).catch(() => {
-      throw new InternalServerErrorException(`User id = ${id} not exist`);
+      throw new NotFoundException(`User id = ${id} not exist`);
     });
 
     const response = await this.usersRepository.update(
