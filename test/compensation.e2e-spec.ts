@@ -101,4 +101,80 @@ describe('Days Off Controller E2E Test', () => {
         });
     });
   });
+
+  describe('Update compensation', () => {
+    let createCompensation;
+    beforeEach(async () => {
+      createCompensation = await compensationsService.createCompensation(
+        INIT_COMPENSATIONS,
+        createUser.data.id,
+      );
+    });
+
+    it('Update compensation success', async () => {
+      return await request(app.getHttpServer())
+        .put(`/compensations/${createCompensation.data.id}`)
+        .set('Authorization', 'Bearer ' + accessToken)
+        .send(INIT_COMPENSATIONS)
+        .expect(HttpStatus.OK);
+    });
+
+    it('Update compensation fail, without token', async () => {
+      return await request(app.getHttpServer())
+        .put(`/compensations/${createCompensation.data.id}`)
+        // .set('Authorization', 'Bearer ' + accessToken)
+        .send(INIT_COMPENSATIONS)
+        .expect(HttpStatus.UNAUTHORIZED);
+    });
+
+    it('Update compensation fail, with not exist compensation', async () => {
+      const fakeCompensationId = -1;
+      return await request(app.getHttpServer())
+        .put(`/compensations/${fakeCompensationId}`)
+        .set('Authorization', 'Bearer ' + accessToken)
+        .send(INIT_COMPENSATIONS)
+        .expect(HttpStatus.INTERNAL_SERVER_ERROR);
+    });
+
+    it('Update compensation with missing date', async () => {
+      return await request(app.getHttpServer())
+        .put(`/compensations/${createCompensation.data.id}`)
+        .set('Authorization', 'Bearer ' + accessToken)
+        .send({ ...INIT_COMPENSATIONS, date: '' })
+        .expect(HttpStatus.BAD_REQUEST)
+        .expect((res) => {
+          expect(res.body.message).toContain('date should not be empty');
+        });
+    });
+    it('Update compensation with missing for_date', async () => {
+      return await request(app.getHttpServer())
+        .put(`/compensations/${createCompensation.data.id}`)
+        .set('Authorization', 'Bearer ' + accessToken)
+        .send({ ...INIT_COMPENSATIONS, for_date: '' })
+        .expect(HttpStatus.BAD_REQUEST)
+        .expect((res) => {
+          expect(res.body.message).toContain('for_date should not be empty');
+        });
+    });
+    it('Update compensation with missing start_at', async () => {
+      return await request(app.getHttpServer())
+        .put(`/compensations/${createCompensation.data.id}`)
+        .set('Authorization', 'Bearer ' + accessToken)
+        .send({ ...INIT_COMPENSATIONS, start_at: '' })
+        .expect(HttpStatus.BAD_REQUEST)
+        .expect((res) => {
+          expect(res.body.message).toContain('start_at should not be empty');
+        });
+    });
+    it('Update compensation with missing end_at', async () => {
+      return await request(app.getHttpServer())
+        .put(`/compensations/${createCompensation.data.id}`)
+        .set('Authorization', 'Bearer ' + accessToken)
+        .send({ ...INIT_COMPENSATIONS, end_at: '' })
+        .expect(HttpStatus.BAD_REQUEST)
+        .expect((res) => {
+          expect(res.body.message).toContain('end_at should not be empty');
+        });
+    });
+  });
 });

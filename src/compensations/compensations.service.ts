@@ -24,4 +24,17 @@ export class CompensationsService {
     });
     return { data: response, message: 'Create compensation success' };
   }
+
+  async updateCompensation(dto: CompensationDto, id) {
+    await this.compensationRepository.findOneByOrFail({ id }).catch(() => {
+      throw new InternalServerErrorException(
+        `Compensation id = ${id} not exist`,
+      );
+    });
+    const response = await this.compensationRepository.update(
+      { id },
+      { ...dto },
+    );
+    return { message: `Compensation id = ${id} update success` };
+  }
 }
